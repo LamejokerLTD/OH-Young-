@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#FF5820">
+  <title>歐陽 · 本機逐字稿工具</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer src="/static/app.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#input">跳至檔案輸入區</a>
+  <header class="masthead wrap">
+    <a class="wordmark" href="#top" aria-label="歐陽 本機逐字稿首頁"><span class="brand-mark" aria-hidden="true">歐</span> 歐陽<span class="wordmark-sub">LOCAL TRANSCRIBER</span></a>
+    <nav aria-label="主要導覽"><a href="#input">開始辨識 <span aria-hidden="true">↗</span></a><a href="#system">運算環境</a></nav>
+    <span class="local-label"><i aria-hidden="true"></i> LOCAL ONLY</span>
+  </header>
+  <main>
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy"><p class="eyebrow">聲音轉為文字，每個時間點都留下。</p><h1 id="hero-title"><span class="product-name">歐陽</span><br><span>ENGINE.</span></h1><p class="hero-caption">本機 AI 音檔／影片逐字稿工具</p></div>
+      <aside class="hero-aside">
+        <div class="signal" aria-hidden="true"><div class="signal-circle"></div><div class="signal-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span>VOICE → TEXT</span><b>＋</b></div>
+        <p>聽見的，忠實留下。<br>從上傳、辨識到時間碼，<br>在你的電腦上完成。</p>
+        <div class="hero-spec"><span>POWERED BY</span><strong>WHISPER LARGE-V3</strong></div>
+      </aside>
+      <div class="hero-baseline"><span>ACCURACY / TIMECODE / ORIGINAL</span><span>01 — 03 <span aria-hidden="true">↓</span></span></div>
+    </section>
+
+    <section id="input" class="input-band band" aria-labelledby="input-title">
+      <div class="wrap section-grid">
+        <div class="section-intro"><span class="index">01</span><p class="eyebrow">INPUT / 輸入</p><h2 id="input-title">從一段<br>聲音開始。</h2><p class="muted">選擇來源，設定語言。<br>其餘交給本機辨識引擎。</p></div>
+        <div class="input-workspace">
+          <input id="file" type="file" accept=".mp4,.mov,.mkv,.avi,.mp3,.wav,.m4a,.aac,.flac,.webm" hidden>
+          <button id="drop" type="button" aria-label="將影片或音檔拖到這裡，或點擊選擇檔案" aria-describedby="formats upload-limit">
+            <span class="drop-top"><span class="eyebrow">AUDIO / VIDEO SOURCE</span><span class="drop-cross" aria-hidden="true">＋</span></span>
+            <span class="drop-title">DROP YOUR FILE.<br><span>LET WORDS FOLLOW.</span></span>
+            <span class="drop-help">將影片或音檔拖到這裡</span>
+            <span class="drop-bottom"><span id="filename" aria-live="polite">尚未選擇檔案</span><span class="select-action">選擇檔案 <span aria-hidden="true">↗</span></span></span>
+          </button>
+          <div class="format-line"><span id="formats">MP4 / MOV / MKV / AVI / MP3 / WAV / M4A / AAC / FLAC / WEBM</span><span id="upload-limit">MAX. 30 GB</span></div>
+          <div class="settings">
+            <label for="model"><span class="field-label">MODEL / 辨識模型</span><select id="model"><option value="large-v3">Whisper Large-v3</option></select></label>
+            <label for="language"><span class="field-label">LANGUAGE / 音訊語言</span><select id="language"><option value="zh">中文</option><option value="auto">自動偵測</option><option value="en">英文</option><option value="ja">日文</option><option value="ko">韓文</option></select></label>
+            <label for="processing_mode"><span class="field-label">MODE / 處理模式</span>
+              <select id="processing_mode">
+                <option value="standard">標準 (Standard)</option>
+                <option value="enhanced">人聲增強 (Enhanced)</option>
+                <option value="dual_track">雙軌高精度 (Dual Track)</option>
+              </select>
+            </label>
+          </div>
+          <div class="input-actions"><label class="check"><input id="traditional" type="checkbox" checked><span>轉為台灣繁體中文<small>OpenCC 字形與詞彙轉換</small></span></label><button id="start" class="primary-button" disabled>開始辨識 <span aria-hidden="true">→</span></button></div>
+          <p class="note">忠於原音，不改寫、不摘要。首次使用會下載模型；當次結果包含原始文字與字詞時間碼。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="progress" class="process-band band" aria-labelledby="process-title" data-state="idle">
+      <div class="wrap"><div class="section-top"><p id="process-title" class="eyebrow">02 / PROCESS · 處理狀態</p><span id="process-state" class="status-tag">READY</span></div>
+        <div class="process-layout"><div class="process-number" id="progress-number" aria-hidden="true">—</div><div class="process-copy"><p class="display" id="process-heading">READY TO<br>LISTEN.</p><h2 id="stage" role="status">選擇檔案後，開始辨識。</h2><p id="process-file" class="process-file"></p></div></div>
+        <progress id="bar" max="100" value="0" hidden aria-label="目前處理進度"></progress>
+        <div class="process-bottom"><p id="percent">辨識進度依實際處理時間碼估算。</p><span>ON DEVICE / WHISPER LARGE-V3</span></div>
+        <p id="warning" class="warning" role="alert" hidden></p>
+      </div>
+    </section>
+
+    <section id="result" hidden aria-labelledby="result-title">
+      <div class="completion-band"><div class="wrap">
+        <div class="section-top"><p class="eyebrow">03 / OUTPUT · 辨識完成</p><span aria-hidden="true">↗</span></div>
+        <div class="completion-grid"><h2 id="result-title" class="display">PROCESS<br>COMPLETE.</h2><dl class="completion-stats"><div><dt>SEGMENTS / 字幕段落</dt><dd id="result-count">—</dd></div><div><dt>DURATION / 媒體長度</dt><dd id="result-duration">—</dd></div></dl></div>
+        <p class="note">結果僅暫存：開始下一次辨識或關閉工具時自動清除。需要保留請先下載。</p>
+        <div class="export-strip"><span class="eyebrow">EXPORT / 下載逐字稿</span><div id="downloads" class="downloads"></div></div>
+      </div></div>
+      <div class="document-band band"><div class="wrap">
+        <div class="document-heading"><div><p class="eyebrow">TRANSCRIPT / 原音紀錄</p><h3 id="result-file">逐字稿</h3></div><p id="metadata"></p></div>
+        <div class="workspace">
+          <aside class="player-column" aria-label="媒體播放與複製"><p class="eyebrow">PLAYBACK / 回到原音</p><video id="player" controls preload="metadata" aria-label="原始媒體播放器"></video><p id="player-note" class="note">點擊逐字稿時間碼，跳到對應位置。</p><button id="copy" class="secondary-button">複製全部逐字稿 <span aria-hidden="true">↗</span></button><p id="copy-status" role="status"></p><textarea id="copy-fallback" hidden aria-label="選取並複製逐字稿"></textarea><dl class="result-specs"><div><dt>MODEL</dt><dd>Large-v3</dd></div><div><dt>LANGUAGE</dt><dd id="result-language">—</dd></div><div><dt>COMPUTE</dt><dd id="result-compute">—</dd></div><div><dt>REAL-TIME FACTOR</dt><dd id="result-rtf">—</dd></div></dl></aside>
+          <div class="document-viewer"><div class="search-bar"><label for="search" class="eyebrow">FIND IN TRANSCRIPT</label><div class="search-field"><input id="search" type="search" placeholder="搜尋逐字稿，例如：媽祖" aria-label="搜尋逐字稿"><span aria-hidden="true">↗</span></div><p id="search-count" role="status"></p></div><div id="transcript" tabindex="0" role="region" aria-label="逐字稿段落"></div></div>
+        </div>
+      </div></div>
+    </section>
+
+    <section id="system" class="system-band"><div class="wrap"><details><summary><span class="eyebrow">SYSTEM / 運算環境</span><span class="system-summary" id="system-summary">正在檢查</span><span class="details-symbol" aria-hidden="true">＋</span></summary><p id="hardware" role="status">正在檢查 GPU…</p><p class="note">實際推論裝置以工作結果為準。CUDA 無法運作時會顯示 CPU 降級警告。</p></details></div></section>
+  </main>
+  <footer class="wrap footer"><span class="footer-brand">歐陽<span> / LOCAL TRANSCRIBER</span></span><span>忠於原音，保留每個時間點。</span><a href="#top" aria-label="回到頁首">BACK TO TOP ↑</a></footer>
+</body>
+</html>

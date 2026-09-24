@@ -1,0 +1,12 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+python-multipart==0.0.22
+faster-whisper==1.2.1
+opencc-python-reimplemented==0.1.7
+imageio-ffmpeg==0.6.0
+soundfile==0.14.0
+noisereduce==3.0.3
+nvidia-cublas-cu12==12.9.1.4
+nvidia-cudnn-cu12==9.10.2.21
+pytest==8.4.2
+httpx==0.28.1

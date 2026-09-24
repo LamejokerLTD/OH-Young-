@@ -1,0 +1,1 @@
+{"read":["app/pipeline_a.py","app/diagnostics.py","requirements.txt","requirements-lock.txt"],"write":["app/diagnostics.py","requirements.txt","requirements-lock.txt"]}

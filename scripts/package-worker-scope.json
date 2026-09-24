@@ -1,0 +1,4 @@
+{
+  "read": ["launcher.py", "scripts/install.ps1", "scripts/install-shortcuts.ps1", "launch-hidden.vbs", "scripts/verify-package-portability.mjs"],
+  "write": ["launcher.py", "scripts/install.ps1", "scripts/install-shortcuts.ps1"]
+}
