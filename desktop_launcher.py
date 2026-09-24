@@ -235,6 +235,28 @@ def main() -> int:
             show_message("Local Whisper 已經在執行中。")
             return 0
 
+        from app.data_directory import (
+            DataDirectoryError,
+            ModelCacheError,
+            ensure_desktop_model,
+            resolve_data_root,
+        )
+
+        try:
+            data_root = resolve_data_root(mode="desktop")
+        except DataDirectoryError as exc:
+            raise DesktopError("Local Whisper 無法存取應用程式資料目錄。") from exc
+        try:
+            model_path = ensure_desktop_model(data_root, PROJECT_ROOT)
+        except ModelCacheError as exc:
+            raise DesktopError(
+                "Local Whisper 找不到可用的 Whisper 模型快取。\n"
+                "請確認原有模型仍存在，或稍後執行模型安裝流程。"
+            ) from exc
+        os.environ["WHISPER_DATA"] = str(data_root)
+        logger.info("Selected data root=%s", data_root)
+        logger.info("Validated model cache=%s", model_path)
+
         import webview
 
         port = choose_port()

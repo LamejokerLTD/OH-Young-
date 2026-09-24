@@ -1,9 +1,10 @@
 import os
 import uuid
 from pathlib import Path
+from app.data_directory import resolve_data_root
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA = Path(os.environ.get('WHISPER_DATA', ROOT)).resolve()
+DATA = resolve_data_root(mode="browser")
 for name in ('uploads', 'outputs', 'temp', 'logs', 'models'):
     (DATA / name).mkdir(parents=True, exist_ok=True)
 os.environ.setdefault('HF_HOME', str(DATA/'models'/'huggingface'))
