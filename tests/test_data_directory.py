@@ -9,6 +9,7 @@ from app.data_directory import (
     DataDirectoryError,
     ModelCacheError,
     ensure_desktop_model,
+    resolve_model_cache,
     resolve_data_root,
     validate_model_cache,
 )
@@ -53,6 +54,14 @@ def test_desktop_override_wins(tmp_path):
     assert result == override.resolve()
 
 
+def test_model_cache_is_independent_from_data_root(tmp_path):
+    data = tmp_path / "runtime"
+    model = tmp_path / "canonical-models"
+    assert resolve_data_root(mode="browser", environ={"WHISPER_DATA": str(data)}) == data.resolve()
+    assert resolve_model_cache(mode="browser", environ={"WHISPER_MODEL_CACHE": str(model)}) == model.resolve()
+    assert data != model
+
+
 def test_invalid_local_app_data_fails_closed(tmp_path):
     blocked = tmp_path / "blocked"
     blocked.write_text("file", encoding="utf-8")
@@ -81,7 +90,7 @@ def test_model_copy_preserves_legacy_and_validates_destination(tmp_path, monkeyp
     data_root = tmp_path / "desktop"
     usage_type = type(shutil.disk_usage("."))
     monkeypatch.setattr("app.data_directory.shutil.disk_usage", lambda _path: usage_type(0, 0, 10 * 1024**3))
-    result = ensure_desktop_model(data_root, tmp_path / "legacy")
+    result = ensure_desktop_model(data_root / "models", tmp_path / "legacy")
     assert result.is_dir()
     assert validate_model_cache(legacy_root / MODEL_CACHE_NAME) is not None
     assert validate_model_cache(data_root / "models" / MODEL_CACHE_NAME) is not None
@@ -91,7 +100,7 @@ def test_model_copy_fails_without_legacy(tmp_path, monkeypatch):
     usage_type = type(shutil.disk_usage("."))
     monkeypatch.setattr("app.data_directory.shutil.disk_usage", lambda _path: usage_type(0, 0, 10 * 1024**3))
     with pytest.raises(ModelCacheError, match="CACHE_MISSING_OR_INVALID"):
-        ensure_desktop_model(tmp_path / "desktop", tmp_path / "legacy")
+        ensure_desktop_model(tmp_path / "desktop" / "models", tmp_path / "legacy")
 
 
 def test_model_copy_rejects_insufficient_space(tmp_path, monkeypatch):
@@ -100,7 +109,7 @@ def test_model_copy_rejects_insufficient_space(tmp_path, monkeypatch):
     usage_type = type(shutil.disk_usage("."))
     monkeypatch.setattr("app.data_directory.shutil.disk_usage", lambda _path: usage_type(0, 0, 1))
     with pytest.raises(ModelCacheError, match="INSUFFICIENT_DISK_SPACE"):
-        ensure_desktop_model(tmp_path / "desktop", tmp_path / "legacy")
+        ensure_desktop_model(tmp_path / "desktop" / "models", tmp_path / "legacy")
 
 
 def test_existing_destination_is_reused(tmp_path, monkeypatch):
@@ -112,7 +121,7 @@ def test_existing_destination_is_reused(tmp_path, monkeypatch):
         "app.data_directory.shutil.copytree",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("copy not expected")),
     )
-    result = ensure_desktop_model(desktop_root, tmp_path / "legacy")
+    result = ensure_desktop_model(desktop_root / "models", tmp_path / "legacy")
     assert result == (desktop_root / "models" / MODEL_CACHE_NAME / "snapshots" / "revision-1").resolve()
 
 
@@ -127,6 +136,6 @@ def test_interrupted_copy_preserves_legacy_and_cleans_staging(tmp_path, monkeypa
         lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("interrupted")),
     )
     with pytest.raises(ModelCacheError, match="CACHE_COPY_FAILED"):
-        ensure_desktop_model(desktop_root, tmp_path / "legacy")
+        ensure_desktop_model(desktop_root / "models", tmp_path / "legacy")
     assert validate_model_cache(legacy_root / MODEL_CACHE_NAME) is not None
     assert not list((desktop_root / "models").glob(".migration-*"))

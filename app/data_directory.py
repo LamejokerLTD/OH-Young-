@@ -17,6 +17,7 @@ class ModelCacheError(RuntimeError):
 
 
 MODEL_CACHE_NAME = "models--Systran--faster-whisper-large-v3"
+MODEL_REPOSITORY = "Systran/faster-whisper-large-v3"
 MODEL_REQUIRED_FILES = (
     "config.json",
     "model.bin",
@@ -66,6 +67,16 @@ def resolve_data_root(*, mode: str = "browser", environ=None, create: bool = Tru
     return _validate(selected, create=create)
 
 
+def resolve_model_cache(*, mode: str = "browser", environ=None, create: bool = True) -> Path:
+    """Resolve the canonical Hugging Face cache independently from DATA."""
+    if mode not in {"browser", "desktop"}:
+        raise ValueError(f"Unsupported model cache mode: {mode}")
+    env = os.environ if environ is None else environ
+    override = env.get("WHISPER_MODEL_CACHE")
+    selected = Path(override) if override else _local_app_data(env) / "models"
+    return _validate(selected, create=create)
+
+
 def validate_model_cache(cache_root: Path) -> Path | None:
     """Return the validated snapshot directory, or None for an incomplete cache."""
     cache_root = Path(cache_root).resolve()
@@ -86,11 +97,11 @@ def validate_model_cache(cache_root: Path) -> Path | None:
     return snapshot
 
 
-def ensure_desktop_model(data_root: Path, project_root: Path) -> Path:
+def ensure_desktop_model(model_cache_root: Path, project_root: Path) -> Path:
     """Reuse or safely copy the known legacy model cache for Desktop mode."""
-    data_root = Path(data_root).resolve()
+    model_cache_root = Path(model_cache_root).resolve()
     project_root = Path(project_root).resolve()
-    destination = data_root / "models" / MODEL_CACHE_NAME
+    destination = model_cache_root / MODEL_CACHE_NAME
     existing = validate_model_cache(destination)
     if existing is not None:
         return existing
@@ -104,13 +115,13 @@ def ensure_desktop_model(data_root: Path, project_root: Path) -> Path:
     source_bytes = sum(path.stat().st_size for path in source_files)
     safety_margin = max(512 * 1024**2, source_bytes // 10)
     try:
-        free_bytes = shutil.disk_usage(data_root).free
+        free_bytes = shutil.disk_usage(model_cache_root).free
     except OSError as exc:
         raise ModelCacheError("DISK_SPACE_UNAVAILABLE") from exc
     if free_bytes < source_bytes + safety_margin:
         raise ModelCacheError("INSUFFICIENT_DISK_SPACE")
 
-    models_root = data_root / "models"
+    models_root = model_cache_root
     models_root.mkdir(parents=True, exist_ok=True)
     staging = models_root / f".migration-{uuid.uuid4().hex}"
     staged_cache = staging / MODEL_CACHE_NAME

@@ -240,6 +240,7 @@ def main() -> int:
             ModelCacheError,
             ensure_desktop_model,
             resolve_data_root,
+            resolve_model_cache,
         )
 
         try:
@@ -247,15 +248,18 @@ def main() -> int:
         except DataDirectoryError as exc:
             raise DesktopError("Local Whisper 無法存取應用程式資料目錄。") from exc
         try:
-            model_path = ensure_desktop_model(data_root, PROJECT_ROOT)
+            model_cache = resolve_model_cache(mode="desktop")
+            model_path = ensure_desktop_model(model_cache, PROJECT_ROOT)
         except ModelCacheError as exc:
             raise DesktopError(
                 "Local Whisper 找不到可用的 Whisper 模型快取。\n"
                 "請確認原有模型仍存在，或稍後執行模型安裝流程。"
             ) from exc
         os.environ["WHISPER_DATA"] = str(data_root)
+        os.environ["WHISPER_MODEL_CACHE"] = str(model_cache)
         logger.info("Selected data root=%s", data_root)
-        logger.info("Validated model cache=%s", model_path)
+        logger.info("Selected model cache=%s", model_cache)
+        logger.info("Validated model snapshot=%s", model_path)
 
         import webview
 

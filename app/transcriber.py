@@ -2,7 +2,8 @@ import gc
 import logging
 from typing import Protocol
 import numpy as np
-from app.config import DATA
+from app.config import MODEL_CACHE
+from app.data_directory import MODEL_REPOSITORY
 from app.audio import chunks
 
 class AlignmentProvider(Protocol):
@@ -134,15 +135,15 @@ class FasterWhisperProvider:
         gc.collect()
         from faster_whisper import WhisperModel
         from huggingface_hub import snapshot_download
-        repo = 'Systran/faster-whisper-large-v3'
+        repo = MODEL_REPOSITORY
         try:
-            folder = snapshot_download(repo, cache_dir=str(DATA/'models'), local_files_only=True)
+            folder = snapshot_download(repo, cache_dir=str(MODEL_CACHE), local_files_only=True)
             from pathlib import Path
             if not (Path(folder)/'model.bin').is_file():
                 raise FileNotFoundError('Incomplete model cache')
         except Exception:
             update(stage='正在下載 Whisper Large-v3（首次下載需要網路）')
-            folder = snapshot_download(repo, cache_dir=str(DATA/'models'), allow_patterns=['*.json','*.bin','*.txt'])
+            folder = snapshot_download(repo, cache_dir=str(MODEL_CACHE), allow_patterns=['*.json','*.bin','*.txt'])
         update(stage='正在載入 Whisper Large-v3')
         self.model = WhisperModel(folder, device=device, compute_type='float16' if device == 'cuda' else 'int8')
         self.device = device

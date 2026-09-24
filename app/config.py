@@ -1,13 +1,14 @@
 import os
 import uuid
 from pathlib import Path
-from app.data_directory import resolve_data_root
+from app.data_directory import resolve_data_root, resolve_model_cache
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = resolve_data_root(mode="browser")
-for name in ('uploads', 'outputs', 'temp', 'logs', 'models'):
+MODEL_CACHE = resolve_model_cache(mode="browser")
+for name in ('uploads', 'outputs', 'temp', 'logs'):
     (DATA / name).mkdir(parents=True, exist_ok=True)
-os.environ.setdefault('HF_HOME', str(DATA/'models'/'huggingface'))
+os.environ.setdefault('HF_HOME', str(MODEL_CACHE/'huggingface'))
 os.environ.setdefault('HF_HUB_DISABLE_XET', '1')
 os.environ.setdefault('HF_HUB_DOWNLOAD_TIMEOUT', '60')
 WORK = DATA/'temp'/('session-' + uuid.uuid4().hex)
