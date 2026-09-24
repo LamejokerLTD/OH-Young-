@@ -1,5 +1,6 @@
 import os
 import tempfile
+import pytest
 os.environ['WHISPER_DATA']=tempfile.mkdtemp(prefix='whisper-test-')
 from fastapi.testclient import TestClient
 from app.main import app, manager
@@ -7,6 +8,13 @@ from app.config import WORK as DATA
 from app.subtitle import export
 client=TestClient(app)
 headers={'X-Local-Request':'1','Content-Type':'audio/wav'}
+
+@pytest.fixture(autouse=True)
+def reset_manager_state():
+    """Keep API tests independent from queued jobs created by earlier tests."""
+    manager.jobs.clear()
+    yield
+    manager.jobs.clear()
 
 def test_home_and_security():
     assert client.get('/').status_code==200
@@ -36,7 +44,7 @@ def test_invalid_media_is_readable_job_error(monkeypatch):
     monkeypatch.setattr(manager.pool,'submit',lambda *a:None)
     response=client.post('/api/jobs?filename=fake.wav',headers=headers,content=b'not real audio')
     id=response.json()['id']
-    manager.run(id,'zh',True)
+    manager.run(id,'zh',True,'standard')
     status=client.get('/api/jobs/'+id).json()
     assert status['status']=='error'
     assert '音軌' in status['stage']
