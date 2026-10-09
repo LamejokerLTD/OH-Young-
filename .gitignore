@@ -13,3 +13,6 @@ installer/
 *.spec
 *.manifest
 *.pyc
+
+# Video projects (inputs, intermediates, outputs)
+Video/

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影片前製工具清單</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--text:#1f1d1a;--muted:#6b665e;--accent:#e8590c;--line:#e6e0d6;--ok:#2b8a3e;--wait:#8a8478;--run:#1971c2;--block:#c92a2a}
+@media (prefers-color-scheme:dark){:root{--bg:#181614;--card:#221f1c;--text:#f2eee8;--muted:#a39d92;--line:#3a352f;--ok:#51cf66;--run:#4dabf7;--block:#ff6b6b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,"Noto Sans TC",sans-serif}
+main{max-width:960px;margin:0 auto;padding:24px 16px 48px}
+h1{margin:0 0 4px;font-size:1.6rem}
+h2{margin:0 0 10px;font-size:1.05rem}
+.muted,.sub{color:var(--muted)}
+.sub{margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.grid .card{margin:0}
+.bar{height:14px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent)}
+.big{font-size:1.4rem;font-weight:700;margin-bottom:8px}
+.action{border:2px solid var(--accent)}
+table{width:100%;border-collapse:collapse}
+td{padding:7px 6px;border-bottom:1px solid var(--line);font-size:.95rem;vertical-align:top}
+td:first-child{color:var(--muted);white-space:nowrap;padding-right:14px}
+.tag{display:inline-block;padding:1px 10px;border-radius:99px;font-size:.8rem;border:1px solid var(--line);color:var(--wait);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:var(--ok)}.tag.run{color:var(--run);border-color:var(--run)}
+.tag.block,.tag.user{color:var(--block);border-color:var(--block)}
+details{border-top:1px solid var(--line);padding:4px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;padding:8px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line);font-size:.85rem;font-weight:700}
+.meta{color:var(--muted);font-size:.85rem;margin-left:auto}
+ul{margin:6px 0 0;padding-left:20px}
+ul.chk{list-style:none;padding-left:34px}
+ul.chk li.done{color:var(--muted)}
+.acc{margin:8px 0 6px 34px;font-size:.92rem}
+details p.muted{margin:0 0 0 34px;font-size:.92rem}
+.flow{font-weight:600}
+.stop{margin:4px 0 6px 34px;padding:6px 10px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:4px;font-size:.92rem}
+.tag.stopt{color:var(--accent);border-color:var(--accent)}
+.tw{overflow-x:auto}
+table.stops th{text-align:left;font-size:.85rem;color:var(--muted);padding:6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.stops td:first-child{color:var(--text)}
+@media (max-width:640px){table.stops th:nth-child(2),table.stops td:nth-child(2){display:none}}
+.sec summary{display:list-item;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>歐陽｜影片前製工具</h1>
+<p class="sub">最後更新：2026-10-09 ｜ 分支 feature/windows-desktop-app ｜ 目前：停止點已集中處理：除了 S2（測試影片）之外，可提前處理的都已完成或延後。.venv 已重建並驗證。等待 S2 後開始 Phase 1。</p>
+
+<section class="card">
+<div class="big">整體進度：約 3%</div>
+<div class="bar"><div style="width:3%"></div></div>
+<p class="muted" style="margin:8px 0 0">範圍從「逐字稿工具優化」擴大為「影片前製工具」，所以進度從約 5% 降為約 3%。</p>
+</section>
+
+<section class="card action">
+<h2>需要你處理</h2>
+<ul><li>S2：把 3 支測試短片放到 Video\_test-samples\（單人、2–3 人對談、有背景噪音）。</li></ul>
+</section>
+
+<div class="grid">
+<section class="card"><h2>現在正在做</h2><p style="margin:0">無。</p></section>
+<section class="card"><h2>接下來</h2><p style="margin:0">提供 S2 測試影片後開始 Phase 1。</p></section>
+<section class="card"><h2>卡住的事</h2><p style="margin:0">無。</p></section>
+</div>
+<div style="height:16px"></div>
+
+<section class="card">
+<h2>⏸ 我會停下來的地方</h2>
+<p class="muted" style="margin:0 0 10px">只有這些地方會停下來等你；其他時間會自動連續執行。決定＝要你選方案、資訊＝要你提供東西、批准＝高風險操作要你同意。</p>
+<div class="tw"><table class="stops"><tr><th>編號</th><th>位置</th><th>類型</th><th>需要你做什麼</th><th>狀態</th></tr><tr><td><b>S1</b></td><td>Phase 1 開工前</td><td><span class="tag stopt">決定</span></td><td>專案資料保存位置與自動清理規則</td><td><span class="tag ok" style="white-space:normal">已回答：Video 資料夾；中間檔 7 天，成品手動刪</span></td></tr><tr><td><b>S2</b></td><td>Phase 1 開工前</td><td><span class="tag stopt">資訊</span></td><td>提供測試影片：一般單人、2–3 人對談、有背景噪音各一支（短片即可）</td><td><span class="tag user" style="white-space:normal">等待中：請放到 Video\_test-samples\</span></td></tr><tr><td><b>S3</b></td><td>1.10</td><td><span class="tag stopt">批准</span></td><td>封存 scripts/*-worker-*.json、合併安裝文件</td><td><span class="tag ok" style="white-space:normal">已授權：Phase 1 執行（移到 docs/archive/）</span></td></tr><tr><td><b>S4</b></td><td>任何時間</td><td><span class="tag stopt">批准</span></td><td>刪除 dist/、temp/ 殘留、.venv.old-20261007</td><td><span class="tag ok" style="white-space:normal">已授權：dist/、temp/、.venv.old 皆已刪除</span></td></tr><tr><td><b>S5</b></td><td>2.4</td><td><span class="tag stopt">決定</span></td><td>成品影片編碼設定</td><td><span class="tag ok" style="white-space:normal">已回答：H.264 高畫質（NVENC）</span></td></tr><tr><td><b>S6</b></td><td>7.4</td><td><span class="tag stopt">資訊</span></td><td>剪輯軟體實際匯入驗證</td><td><span class="tag ok" style="white-space:normal">已回答：只實測 Premiere Pro 2025；DaVinci／Final Cut 標 NOT RUN</span></td></tr><tr><td><b>S7</b></td><td>Phase 8 開工前</td><td><span class="tag stopt">批准＋資訊</span></td><td>下載 PyTorch 與 pyannote；你本人同意 Hugging Face 條款並設定 Token</td><td><span class="tag run" style="white-space:normal">模型已選 pyannote；下載延後到最後決定</span></td></tr><tr><td><b>S8</b></td><td>9.1</td><td><span class="tag stopt">批准</span></td><td>下載本機聲音合成模型（數 GB）</td><td><span class="tag run" style="white-space:normal">延後到最後決定</span></td></tr><tr><td><b>S9</b></td><td>9.5</td><td><span class="tag stopt">決定</span></td><td>雲端合成服務廠商</td><td><span class="tag run" style="white-space:normal">延後到最後決定</span></td></tr><tr><td><b>S10</b></td><td>9.6</td><td><span class="tag stopt">資訊</span></td><td>雲端 API Key 由你本人輸入到工具內（我不會經手 Key）</td><td><span class="tag wait" style="white-space:normal">未到</span></td></tr><tr><td><b>S11</b></td><td>Phase 10</td><td><span class="tag stopt">批准</span></td><td>Security Gate 為 BLOCK 或 CONDITIONAL 時的處理</td><td><span class="tag wait" style="white-space:normal">未到</span></td></tr><tr><td><b>S12</b></td><td>全部完成後</td><td><span class="tag stopt">批准</span></td><td>Push、建立 PR、Merge 到 main</td><td><span class="tag wait" style="white-space:normal">未授權</span></td></tr><tr><td><b>S13</b></td><td>Phase 1 開工前</td><td><span class="tag stopt">決定</span></td><td>專案沒有 .venv，只剩 .venv.old-20261007；啟動腳本目前找不到環境</td><td><span class="tag ok" style="white-space:normal">已回答：已重建 .venv 並驗證（52 passed）</span></td></tr></table></div>
+<p class="muted" style="margin:8px 0 0">不是停止點：階段完成、Commit、測試失敗修復、UI 風格選型（我依 UIUX CATALOG 自行決定並記錄）、試聽類人工驗收（累積到最終驗收一起看）。</p><p class="muted" style="margin:8px 0 0">意外的停止條件：重大需求衝突、可能破壞你的既有工作、無法安全處理的資安風險、合理修復後仍有實質阻擋。</p><p style="margin:12px 0 0"><span class="muted">執行順序：</span><span class="flow">Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查與驗收）→ ⏸ S7／S8／S9 一次決定 → Phase 8 → Phase 9 → 新增部分的安全複查。</span></p>
+</section>
+
+<section class="card">
+<h2>各階段與小項</h2>
+<details open><summary><span class="pn">0</span><b>分析與需求決策</b><span class="meta">權重 3%・3/3 項</span><span class="tag ok">完成</span></summary><ul class="chk"><li class="done">☑ 專案功能、架構、檔案組成分析</li><li class="done">☑ 五項新功能可行性評估</li><li class="done">☑ 需求決策鎖定（見上方表格）</li></ul></details>
+<details open><summary><span class="pn">1</span><b>基礎整理</b><span class="meta">權重 15%・0/11 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 4 個停止點</span></summary><div class="stop"><b>⏸ S1 決定</b>：專案保存位置與清理規則（已回答）</div><div class="stop"><b>⏸ S2 資訊</b>：開工前提供測試影片（等待中）</div><div class="stop"><b>⏸ S13 決定</b>：Python 環境（已回答，.venv 已重建）</div><div class="stop"><b>⏸ S3 批准</b>：已授權封存到 docs/archive/</div><p class="muted">把單一工作、用完即刪的架構，改成能保存專案、批次處理的地基。</p><ul class="chk"><li class="">☐ 1.0 修正既有失敗測試 test_browser_default_is_project_root（寫死舊資料夾名稱「Local Whisper」）</li><li class="">☐ 1.1 補測試：jobs 狀態機（成功、失敗、取消、忙碌）</li><li class="">☐ 1.2 補測試：GPU→CPU 退回、降速補救重試（假 provider，不下載模型）</li><li class="">☐ 1.3 補測試：comparator.py、pipeline_a.py</li><li class="">☐ 1.4 main.py 拆 routers（jobs、downloads、media、system）</li><li class="">☐ 1.5 jobs.py 拆出分塊、補救、退回邏輯</li><li class="">☐ 1.6 專案資料夾設計：Video\ 下每支影片的輸入、中間檔、成品分開保存；中間檔 7 天自動清理，成品不自動刪</li><li class="">☐ 1.7 批次佇列：多檔排隊、每檔每步驟狀態、可取消單檔</li><li class="">☐ 1.8 啟動時清除過期暫存 session（保護使用中的 session）；舊 temp/ 殘留已手動清除</li><li class="">☐ 1.9 requirements 拆 dev 依賴並同步 lock；選配依賴延遲載入</li><li class="">☐ 1.10 處理 scripts/*-worker-*.json 與重疊安裝文件（需使用者確認）</li></ul><p class="acc"><b>驗收條件：</b>既有逐字稿功能行為不變；pytest 全綠；重啟後專案仍在；多檔可排隊。</p></details>
+<details><summary><span class="pn">2</span><b>處理流程骨架與參數介面</b><span class="meta">權重 12%・0/6 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 1 個停止點</span></summary><div class="stop"><b>⏸ S5 決定</b>：已回答 H.264 高畫質</div><p class="muted">建立「選參數 → 預覽 → 批次輸出」的流程。</p><ul class="chk"><li class="">☐ 2.1 Pipeline 引擎：依固定順序串接步驟，每步可開關、可重跑</li><li class="">☐ 2.2 參數介面：五項功能的開關與參數，多檔拖入</li><li class="">☐ 2.3 30 秒預覽試聽（原始 vs 處理後）</li><li class="">☐ 2.4 成品影片編碼：H.264 高畫質（NVENC），無 GPU 時退回 CPU 編碼</li><li class="">☐ 2.5 app.js 拆成 ES modules（原生，不引入建置工具）</li><li class="">☐ 2.6 UI 選型：依 UIUX CATALOG 選 Primary／Secondary 風格</li></ul><p class="acc"><b>驗收條件：</b>可選參數並對多檔排隊；預覽可聽；Desktop／Mobile、空、載入、錯誤、長內容狀態正常。</p></details>
+<details><summary><span class="pn">3</span><b>聲音清晰化</b><span class="meta">權重 8%・0/5 項</span><span class="tag wait">尚未開始</span></summary><ul class="chk"><li class="">☐ 3.1 降噪（FFmpeg 降噪濾鏡，評估保留 noisereduce）</li><li class="">☐ 3.2 高低頻濾波與 EQ</li><li class="">☐ 3.3 壓縮與音量平衡</li><li class="">☐ 3.4 響度標準化（EBU R128）</li><li class="">☐ 3.5 預設組：Podcast、戶外、室內回音</li></ul><p class="acc"><b>驗收條件：</b>預設組在測試音檔上可試聽比較；響度落在目標範圍；人聲不明顯變悶。</p></details>
+<details><summary><span class="pn">4</span><b>去除空白</b><span class="meta">權重 10%・0/4 項</span><span class="tag wait">尚未開始</span></summary><ul class="chk"><li class="">☐ 4.1 用 VAD + 音量偵測找出無對話區段</li><li class="">☐ 4.2 參數：靜音門檻、最短空白長度、前後保留時間</li><li class="">☐ 4.3 精準剪接並重新編碼</li><li class="">☐ 4.4 產生剪輯點資料（供 Phase 6、7 使用）</li></ul><p class="acc"><b>驗收條件：</b>剪接後無明顯截字；剪輯點資料與成品一致。</p></details>
+<details><summary><span class="pn">5</span><b>影片提速</b><span class="meta">權重 5%・0/2 項</span><span class="tag wait">尚未開始</span></summary><ul class="chk"><li class="">☐ 5.1 畫面與聲音同步加速，聲音保持原音高</li><li class="">☐ 5.2 速度選項與試聽（建議 1.0–1.5 倍）</li></ul><p class="acc"><b>驗收條件：</b>音畫同步；1.5 倍以內無明顯失真。</p></details>
+<details><summary><span class="pn">6</span><b>逐字稿對接</b><span class="meta">權重 5%・0/2 項</span><span class="tag wait">尚未開始</span></summary><ul class="chk"><li class="">☐ 6.1 逐字稿以最終成品為準，或依剪輯點與速度換算時間碼</li><li class="">☐ 6.2 字幕五種格式對齊成品</li></ul><p class="acc"><b>驗收條件：</b>字幕在成品影片上時間正確。</p></details>
+<details><summary><span class="pn">7</span><b>剪輯清單匯出</b><span class="meta">權重 10%・0/4 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 1 個停止點</span></summary><div class="stop"><b>⏸ S6 資訊</b>：已回答，只實測 Premiere Pro 2025</div><ul class="chk"><li class="">☐ 7.1 FCPXML（DaVinci Resolve、Final Cut Pro）</li><li class="">☐ 7.2 Premiere XML</li><li class="">☐ 7.3 EDL（通用）</li><li class="">☐ 7.4 實際匯入 DaVinci Resolve、Premiere Pro 驗證（Final Cut Pro 需 Mac，無法本機驗證時標 NOT RUN）</li></ul><p class="acc"><b>驗收條件：</b>匯入後剪輯點與成品一致。</p></details>
+<details><summary><span class="pn">8</span><b>發言者分離</b><span class="meta">權重 10%・0/4 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 1 個停止點</span></summary><div class="stop"><b>⏸ S7 批准＋資訊</b>：已選 pyannote；下載與 Hugging Face Token 延後到最後決定</div><ul class="chk"><li class="">☐ 8.1 選定發言者辨識模型（確認授權與顯示記憶體需求）</li><li class="">☐ 8.2 每位發言者輸出獨立音軌</li><li class="">☐ 8.3 逐字稿標示發言者</li><li class="">☐ 8.4 與 Whisper 共用 12 GB 顯示記憶體：依序執行並釋放</li></ul><p class="acc"><b>驗收條件：</b>2–3 人對談測試音檔可正確分軌；重疊段落限制有說明。</p></details>
+<details><summary><span class="pn">9</span><b>AI 聲音合成（實驗性）</b><span class="meta">權重 15%・0/7 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 3 個停止點</span></summary><div class="stop"><b>⏸ S8 批准</b>：9.1 下載本機合成模型（延後到最後決定）</div><div class="stop"><b>⏸ S9 決定</b>：9.5 雲端服務廠商（延後到最後決定）</div><div class="stop"><b>⏸ S10 資訊</b>：9.6 API Key 由你本人輸入</div><ul class="chk"><li class="">☐ 9.1 本機模型選型與中文品質實測</li><li class="">☐ 9.2 依發言者原聲建立聲音模型，依逐字稿逐句合成</li><li class="">☐ 9.3 對回時間軸，另外輸出合成音軌</li><li class="">☐ 9.4 克隆同意確認選項</li><li class="">☐ 9.5 雲端服務接入（廠商待決定）</li><li class="">☐ 9.6 API Key 存 Windows 認證儲存區</li><li class="">☐ 9.7 預估費用、單次與每日上限、上傳警告</li></ul><p class="acc"><b>驗收條件：</b>合成音軌可在剪輯軟體中逐句替換；Security Invariants 1–4 驗證通過。</p></details>
+<details><summary><span class="pn">10</span><b>安全審查與整體驗收</b><span class="meta">權重 7%・0/4 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 2 個停止點</span></summary><div class="stop"><b>⏸ S11 批准</b>：Security Gate 為 BLOCK 或 CONDITIONAL 時</div><div class="stop"><b>⏸ S12 批准</b>：Push、PR、Merge</div><ul class="chk"><li class="">☐ 10.1 檢視 /api/debug 是否洩漏路徑或環境資訊</li><li class="">☐ 10.2 新增 API 與上傳、下載的 Security Diff Review</li><li class="">☐ 10.3 Security Invariants 全部驗證</li><li class="">☐ 10.4 全部測試、Diff Review、真實影片端到端驗收</li></ul><p class="acc"><b>驗收條件：</b>Security Gate 無 HIGH；端到端驗收通過。</p></details>
+</section>
+
+<section class="card">
+<h2>已鎖定的決策</h2>
+<table><tr><td>成品</td><td>處理後影片 + 字幕 + 剪輯清單</td></tr><tr><td>剪輯清單</td><td>FCPXML（DaVinci Resolve、Final Cut Pro）、Premiere XML、EDL（通用）</td></tr><tr><td>人聲重製</td><td>發言者音軌分離 + AI 聲音合成</td></tr><tr><td>AI 合成引擎</td><td>本機模型為預設，可切換雲端服務</td></tr><tr><td>AI 合成輸出</td><td>另外輸出一條音軌，不取代原聲</td></tr><tr><td>開發順序</td><td>AI 聲音合成最後做，標示為實驗性；發言者分離與 AI 合成的下載延後到最後決定</td></tr><tr><td>專案保存位置</td><td>E:\Codex\OH Young! l 影片製作工具\Video（已加入 .gitignore）</td></tr><tr><td>清理規則</td><td>中間檔 7 天自動刪除；成品只能手動刪除</td></tr><tr><td>成品編碼</td><td>H.264 高畫質，RTX 3060 硬體編碼</td></tr><tr><td>剪輯清單驗證</td><td>實測 Premiere Pro 2025；DaVinci Resolve／Final Cut Pro 只做格式檢查</td></tr><tr><td>發言者辨識模型</td><td>pyannote（需你本人設定 Hugging Face Token）</td></tr><tr><td>舊優化清單</td><td>併入本清單（見 Change Log 對照）</td></tr></table>
+<p style="margin:12px 0 0"><span class="muted">固定處理順序：</span><span class="flow">清晰化／發言者分離 → 偵測空白 → 剪接 → 提速 → 逐字稿（字幕時間碼對到成品）</span></p>
+</section>
+
+<section class="card">
+<h2>到該階段再決定</h2>
+<ul><li>是否下載 PyTorch、pyannote、本機合成模型（S7、S8，最後決定）</li><li>雲端合成服務廠商（S9，最後決定）</li><li>本機合成模型（Phase 9，需實測中文品質）</li></ul>
+</section>
+
+<section class="card sec">
+<details><summary>安全原則（Security Invariants）</summary><ol><li>雲端 API Key 只存在 Windows 認證儲存區，不進 Git、設定檔、前端程式碼、Log、錯誤訊息。</li><li>雲端合成預設關閉；每次使用前明確提示「音訊會上傳第三方」。</li><li>雲端合成送出前顯示預估費用，並受單次與每日上限限制。</li><li>使用他人聲音克隆前必須勾選「已取得說話者同意」。</li><li>服務仍只綁定 127.0.0.1；外部網站不能觸發處理或下載。</li><li>檔名不參與磁碟路徑；下載只接受專案 ID + 白名單格式。</li></ol></details>
+<details><summary>技術紀錄</summary><ul><li>現況：temp/ 5.8 GB、dist/ 5.2 GB 已於 2026-10-09 刪除（約釋放 11 GB）；static/app.js 2053 行、app/main.py 843 行、app/jobs.py 788 行</li><li>環境：.venv 於 2026-10-09 依 requirements-lock.txt 重建；app.diagnostics 通過；pytest 52 passed、1 failed（既有測試問題，見 1.0）；pytest 需加 --basetemp 指定可寫入的暫存資料夾</li><li>硬體：RTX 3060 12 GB（Whisper 與其他 AI 模型需依序共用）</li><li>參考：docs/dual-track-speech-pipeline.md（舊雙軌提案，Phase 3、9 可參考）</li></ul></details>
+<details><summary>變更紀錄</summary><ul><li>2026-10-09：建立 WORKLIST，完成專案分析（舊版 7 階段優化清單）。</li><li>2026-10-09：重建 .venv 並驗證；刪除 .venv.old-20261007；新增 1.0 修正既有失敗測試。</li><li>2026-10-09：集中回答停止點；刪除 dist/、temp/；Video/ 加入 .gitignore；新增 S13（.venv 缺失）；調整執行順序（Phase 8、9 移到 Phase 10 之後）。</li><li>2026-10-09：標示停止點 S1–S12。</li><li>2026-10-09：需求擴充為影片前製工具，清單重整（MERGE）：</li></ul><p class="muted">本頁由 WORKLIST.md 同步產生。</p></details>
+</section>
+</main>
+</body>
+</html>
