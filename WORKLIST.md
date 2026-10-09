@@ -66,7 +66,7 @@
 | S9 | 9.5 | 決定 | 雲端合成服務廠商 | 是 | 延後到最後決定 |
 | S10 | 9.6 | 資訊 | 雲端 API Key 由你本人輸入到工具內（我不會經手 Key） | 否 | 未到 |
 | S11 | Phase 10 | 批准 | Security Gate 為 BLOCK 或 CONDITIONAL 時的處理 | 否 | 未到 |
-| S12 | 全部完成後 | 批准 | Push、建立 PR、Merge 到 main | 是 | 未授權 |
+| S12 | 全部完成後 | 批准 | Push、建立 PR、Merge 到 main | 是 | Push feature branch 已授權並執行（origin）；PR、Merge 未授權 |
 | S13 | Phase 1 開工前 | 決定 | 專案沒有 .venv，只剩 .venv.old-20261007；啟動腳本目前找不到環境 | 是 | 已回答：已重建 .venv 並驗證（52 passed） |
 
 不是停止點：階段完成、Commit、測試失敗修復、UI 風格選型（我依 UIUX CATALOG 自行決定並記錄）、試聽類人工驗收（累積到最終驗收一起看）。
@@ -206,7 +206,8 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 ## Decision / Approval State
 - 延後：S7、S8、S9（Phase 10 之後一次決定）
 - 已授權：S3 封存舊 worker 設定檔（Phase 1 執行）；S4 刪除 dist/、temp/、.venv.old（皆已執行）
-- Push／PR／Merge／Production：未授權
+- Push：已授權 feature/windows-desktop-app → origin（GitHub LamejokerLTD/OH-Young-，目前為 Public）
+- PR／Merge／Production：未授權
 
 ## 使用者需要處理
 - S2：把 3 支測試短片放到 Video\_test-samples\（單人、2–3 人對談、有背景噪音）。
@@ -219,6 +220,7 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 
 ## Change Log
 - 2026-10-09：建立 WORKLIST，完成專案分析（舊版 7 階段優化清單）。
+- 2026-10-10：設定 GitHub remote 並 push feature/windows-desktop-app。
 - 2026-10-09：重建 .venv 並驗證；刪除 .venv.old-20261007；新增 1.0 修正既有失敗測試。
 - 2026-10-09：集中回答停止點；刪除 dist/、temp/；Video/ 加入 .gitignore；新增 S13（.venv 缺失）；調整執行順序（Phase 8、9 移到 Phase 10 之後）。
 - 2026-10-09：標示停止點 S1–S12。
