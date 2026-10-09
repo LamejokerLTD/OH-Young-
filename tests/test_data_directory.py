@@ -28,10 +28,9 @@ def make_model_cache(root: Path, *, valid: bool = True) -> Path:
 
 
 def test_browser_default_is_project_root(tmp_path):
-    root = tmp_path / "project"
-    root.mkdir()
-    # The resolver's browser default is based on the application source root.
-    assert resolve_data_root(mode="browser", environ={}, create=False).name == "Local Whisper"
+    # The browser default is the application source root, whatever the folder is named.
+    project_root = Path(__file__).resolve().parent.parent
+    assert resolve_data_root(mode="browser", environ={}, create=False) == project_root
 
 
 def test_browser_override(tmp_path):

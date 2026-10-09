@@ -17,6 +17,24 @@ def remove_session(directory):
         shutil.rmtree(directory)
 
 
+def purge_stale_sessions(temp_dir, keep, max_age_hours=24):
+    """Remove session folders left behind by a crash or power loss. The live session is kept."""
+    temp_dir = Path(temp_dir)
+    if not temp_dir.is_dir():
+        return 0
+    cutoff = time.time() - max_age_hours * 3600
+    removed = 0
+    for entry in temp_dir.iterdir():
+        if entry.name == Path(keep).name or not entry.is_dir() or entry.is_symlink():
+            continue
+        if not re.fullmatch(r'session-[a-f0-9]{32}', entry.name):
+            continue
+        if entry.stat().st_mtime < cutoff:
+            shutil.rmtree(entry, ignore_errors=True)
+            removed += 1
+    return removed
+
+
 def start_watcher(directory):
     if os.name == 'nt':
         return subprocess.Popen(

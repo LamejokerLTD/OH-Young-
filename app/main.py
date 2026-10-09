@@ -71,8 +71,10 @@ async def lifespan(app):
     logger.info("=" * 70)
 
     from app.cleanup import start_watcher
+    from app.prep.routes import startup as prep_startup
 
     watcher = start_watcher(WORK)
+    logger.info("Prep startup: %s", prep_startup())
 
     try:
         yield
@@ -88,6 +90,11 @@ app = FastAPI(
     title="歐陽｜本機逐字稿工具",
     lifespan=lifespan,
 )
+
+
+from app.prep.routes import install as install_prep
+
+install_prep(app)
 
 
 # ============================================================

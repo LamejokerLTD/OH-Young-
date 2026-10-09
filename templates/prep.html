@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影片前製｜歐陽</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/prep.css">
+</head>
+<body class="prep-page">
+<a class="skip-link" href="#main">跳到主要內容</a>
+<header class="prep-top">
+  <div>
+    <p class="eyebrow">LOCAL PRE-PRODUCTION</p>
+    <h1>影片前製</h1>
+  </div>
+  <nav><a href="/">逐字稿工具</a></nav>
+</header>
+
+<main id="main" class="prep-main">
+
+  <section class="panel" aria-labelledby="inputs-title">
+    <div class="panel-head">
+      <h2 id="inputs-title">1. 來源影片</h2>
+      <button type="button" id="refresh-inputs" class="ghost">重新整理</button>
+    </div>
+    <p class="hint">把影片放進專案的 <code>Video</code> 資料夾，再按重新整理。可以一次選多支，每支會用同一組參數獨立處理。</p>
+    <ul id="input-list" class="input-list" aria-live="polite"></ul>
+    <p id="input-empty" class="hint" hidden>Video 資料夾裡還沒有可處理的影片或音訊。</p>
+  </section>
+
+  <section class="panel" aria-labelledby="params-title">
+    <div class="panel-head">
+      <h2 id="params-title">2. 處理參數</h2>
+      <button type="button" id="reset-params" class="ghost">恢復預設</button>
+    </div>
+
+    <div class="param-group">
+      <label class="field-row">
+        <span class="field-label">影片提速 <output id="speed-out">1.00×</output></span>
+        <input type="range" id="speed" min="1" max="2" step="0.05" value="1">
+        <span class="hint">聲音保持原音高；超過 1.5 倍可能略有機械感。</span>
+      </label>
+    </div>
+
+    <div class="param-group">
+      <p class="field-label">聲音清晰化</p>
+      <div class="toggle-grid">
+        <label class="field-row">
+          <span class="field-label">降噪</span>
+          <select id="denoise">
+            <option value="off">關閉</option>
+            <option value="light">輕度</option>
+            <option value="strong">強力</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="eq"> EQ 調整（去悶、提亮人聲）</label>
+        <label class="check"><input type="checkbox" id="balance"> 音量平衡（壓縮動態）</label>
+        <label class="check"><input type="checkbox" id="loudness"> 響度標準化（-16 LUFS）</label>
+      </div>
+      <button type="button" id="apply-recommended" class="ghost">套用推薦組合</button>
+    </div>
+
+    <div class="param-group">
+      <label class="check"><input type="checkbox" id="silence-on"> 去除空白（依音量自動剪掉無人說話的片段）</label>
+      <div class="toggle-grid" id="silence-fields">
+        <label class="field-row">
+          <span class="field-label">靜音門檻</span>
+          <select id="threshold">
+            <option value="-45">寬鬆（-45 dB，只剪很安靜的部分）</option>
+            <option value="-35" selected>標準（-35 dB）</option>
+            <option value="-25">積極（-25 dB，背景音大時用）</option>
+          </select>
+        </label>
+        <label class="field-row">
+          <span class="field-label">最短空白 <output id="min-out">0.8 秒</output></span>
+          <input type="range" id="min-silence" min="0.2" max="10" step="0.1" value="0.8">
+        </label>
+        <label class="field-row">
+          <span class="field-label">前後保留 <output id="pad-out">0.15 秒</output></span>
+          <input type="range" id="pad" min="0" max="2" step="0.05" value="0.15">
+        </label>
+      </div>
+      <p class="hint">背景噪音大時偵測不到靜音，請把門檻改成「積極」再預覽。</p>
+    </div>
+
+    <div class="param-group">
+      <label class="check"><input type="checkbox" id="transcript-on" checked> 產生逐字稿（對應成品影片的時間碼）</label>
+      <div class="toggle-grid">
+        <label class="field-row">
+          <span class="field-label">語言</span>
+          <select id="language">
+            <option value="zh" selected>中文</option>
+            <option value="en">英文</option>
+            <option value="ja">日文</option>
+            <option value="ko">韓文</option>
+            <option value="auto">自動偵測</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="traditional" checked> 轉為台灣繁體用語</label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="preview-btn" class="secondary">預覽前 30 秒</button>
+      <button type="button" id="submit-btn" class="primary">開始批次處理</button>
+    </div>
+    <p id="form-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="panel" id="preview-panel" hidden aria-labelledby="preview-title">
+    <div class="panel-head">
+      <h2 id="preview-title">預覽</h2>
+      <button type="button" id="close-preview" class="ghost">關閉</button>
+    </div>
+    <div id="preview-slot"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="jobs-title">
+    <div class="panel-head">
+      <h2 id="jobs-title">3. 處理進度</h2>
+      <button type="button" id="refresh-jobs" class="ghost">重新整理</button>
+    </div>
+    <ul id="job-list" class="job-list" aria-live="polite"></ul>
+    <p id="job-empty" class="hint" hidden>還沒有處理過的工作。</p>
+  </section>
+
+</main>
+<script src="/static/prep.js"></script>
+</body>
+</html>
