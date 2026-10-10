@@ -327,3 +327,114 @@ def test_render_removes_silence_and_matches_expected_length(video_root, tmp_path
     rendered = probe(output, log_dir=work)
     assert abs(rendered.duration - expected / 1.25) < 0.3
     assert rendered.width == info.width and rendered.height == info.height
+
+
+def _flash_time(path):
+    """First frame whose average brightness jumps: the white flash."""
+    import re
+    result = subprocess.run([
+        _ffmpeg(), '-hide_banner', '-i', str(path), '-an',
+        '-vf', 'signalstats,metadata=print:key=lavfi.signalstats.YAVG', '-f', 'null', '-',
+    ], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
+    times = re.findall(r'pts_time:([\d.]+)\s*\n.*?YAVG=([\d.]+)', result.stderr)
+    return next(float(t) for t, y in times if float(y) > 100)
+
+
+def _beep_time(path):
+    import re
+    result = subprocess.run([
+        _ffmpeg(), '-hide_banner', '-i', str(path), '-vn',
+        '-af', 'silencedetect=noise=-30dB:d=0.05', '-f', 'null', '-',
+    ], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
+    return float(re.findall(r'silence_end: ([\d.]+)', result.stderr)[0])
+
+
+@pytest.mark.parametrize('speed', [1.0, 1.25])
+def test_render_keeps_audio_in_sync_when_audio_track_starts_late(video_root, tmp_path, speed):
+    """Phone footage: audio track starts after the video. Flash and beep must stay aligned after cuts."""
+    from app.prep.media import probe
+    from app.prep.render import render
+
+    work = tmp_path / 'work'
+    work.mkdir()
+    video = work / 'v.mp4'
+    audio = work / 'a.wav'
+    subprocess.run([
+        _ffmpeg(), '-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi',
+        '-i', 'color=c=black:s=320x240:r=30:d=4',
+        '-vf', "drawbox=enable='between(t,2,2.2)':color=white:t=fill",
+        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(video),
+    ], check=True, timeout=120)
+    # Audio track begins 0.4 s late, so the beep at local 1.6 s plays at 2.0 s with the flash.
+    subprocess.run([
+        _ffmpeg(), '-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi',
+        '-i', r'aevalsrc=if(between(t\,1.6\,1.8)\,0.5*sin(2*PI*1000*t)\,0):s=48000:d=3.6',
+        str(audio),
+    ], check=True, timeout=120)
+    source = video_root / 'phone.mov'
+    subprocess.run([
+        _ffmpeg(), '-hide_banner', '-loglevel', 'error', '-y', '-i', str(video),
+        '-itsoffset', '0.4', '-i', str(audio), '-map', '0:v', '-map', '1:a',
+        '-c:v', 'copy', '-c:a', 'pcm_s16le', str(source),
+    ], check=True, timeout=120)
+    assert abs(_flash_time(source) - _beep_time(source)) < 0.05  # the source itself is in sync
+
+    info = probe(source, log_dir=work)
+    keep = [(0.0, 1.0), (1.5, 4.0)]
+    params = Params.model_validate({'silence': {'enabled': True}, 'speed': speed})
+    output = tmp_path / 'render.mp4'
+    render(source, output, keep, params, info, work_dir=work)
+
+    flash, beep = _flash_time(output), _beep_time(output)
+    assert abs(flash - 1.5 / speed) < 0.08
+    assert abs(flash - beep) < 0.05
+
+
+def test_align_shifts_audio_from_the_original_render_and_moves_subtitles(video_root, tmp_path):
+    from app.prep import pipeline
+
+    manifest = store.create('clip.mp4', 'clip', {}, root=video_root)
+    output = store.project_dir(manifest['id'], video_root) / 'output'
+    render_file = output / 'render.mp4'
+    subprocess.run([
+        _ffmpeg(), '-hide_banner', '-loglevel', 'error', '-y',
+        '-f', 'lavfi', '-i', 'color=c=black:s=320x240:r=30:d=4',
+        '-f', 'lavfi', '-i', r'aevalsrc=if(between(t\,2\,2.2)\,0.5*sin(2*PI*1000*t)\,0):s=48000:d=4',
+        '-vf', "drawbox=enable='between(t,2,2.2)':color=white:t=fill",
+        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', str(render_file),
+    ], check=True, timeout=120)
+    transcript = output / 'transcript'
+    transcript.mkdir()
+    result = {'segments': [{'start': 2.0, 'end': 2.2, 'text': '嗶', 'words': [{'start': 2.0, 'end': 2.2}]}],
+              'subtitles': [{'start': 2.0, 'end': 2.2, 'text': '嗶'}]}
+    (transcript / 'transcript.json').write_text(json.dumps(result, ensure_ascii=False), encoding='utf-8')
+    manifest['status'] = 'done'
+    store.save(manifest, video_root)
+
+    pipeline.align(manifest, 300, video_root)
+    assert abs((_beep_time(render_file) - _flash_time(render_file)) - 0.3) < 0.05
+    saved = json.loads((transcript / 'transcript.json').read_text(encoding='utf-8'))
+    assert saved['subtitles'][0]['start'] == pytest.approx(2.3)
+    assert saved['segments'][0]['words'][0]['start'] == pytest.approx(2.3)
+    assert '00:00:02,300' in (transcript / 'transcript.srt').read_text(encoding='utf-8')
+
+    # The next adjustment starts again from the original render, so offsets never stack.
+    pipeline.align(manifest, -200, video_root)
+    assert abs((_beep_time(render_file) - _flash_time(render_file)) + 0.2) < 0.05
+    saved = json.loads((transcript / 'transcript.json').read_text(encoding='utf-8'))
+    assert saved['subtitles'][0]['start'] == pytest.approx(1.8)
+    assert store.load(manifest['id'], video_root)['av_offset_ms'] == -200
+    assert '.render-base.mp4' not in [path.name for path in store.output_files(manifest, video_root).values()]
+
+
+def test_align_refuses_unfinished_jobs_and_out_of_range_offsets(video_root):
+    from app.prep import pipeline
+
+    manifest = store.create('clip.mp4', 'clip', {}, root=video_root)
+    with pytest.raises(PrepError):
+        pipeline.align(manifest, 100, video_root)
+    manifest['status'] = 'done'
+    with pytest.raises(PrepError):
+        pipeline.align(manifest, 5000, video_root)
+    with pytest.raises(PrepError):
+        pipeline.align(manifest, 100, video_root)   # no render.mp4

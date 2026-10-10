@@ -66,3 +66,9 @@ class PreviewRequest(BaseModel):
 
 
 PREVIEW_SECONDS = 30
+
+
+class AlignRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+    offset_ms: int = Field(ge=-2000, le=2000)   # positive delays the audio

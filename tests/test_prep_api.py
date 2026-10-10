@@ -81,3 +81,13 @@ def test_preview_name_must_match_pattern(client):
 def test_malformed_project_id_is_refused(client):
     response = client.get('/api/prep/projects/..%5C..%5Cetc')
     assert response.status_code in (400, 404)
+
+
+def test_align_rejects_out_of_range_offset(client):
+    response = client.post('/api/prep/projects/' + 'a' * 32 + '/align', json={'offset_ms': 99999}, headers=LOCAL)
+    assert response.status_code == 422
+
+
+def test_align_requires_local_header(client):
+    response = client.post('/api/prep/projects/' + 'a' * 32 + '/align', json={'offset_ms': 100})
+    assert response.status_code == 403

@@ -75,3 +75,8 @@ input[type=range]{accent-color:var(--accent);width:100%}
   .panel{padding:16px}
   .actions button{flex:1 1 100%}
 }
+
+/* A/V alignment step */
+.align-controls{display:grid;gap:10px;margin-top:14px}
+.align-nudge{display:flex;flex-wrap:wrap;gap:8px}
+#align-panel .hint strong{color:var(--ink)}

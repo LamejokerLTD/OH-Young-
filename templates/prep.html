@@ -116,6 +116,32 @@
     <div id="preview-slot"></div>
   </section>
 
+  <section class="panel" id="align-panel" hidden aria-labelledby="align-title">
+    <div class="panel-head">
+      <h2 id="align-title">音畫對齊：<span id="align-name"></span></h2>
+      <button type="button" id="close-align" class="ghost">關閉</button>
+    </div>
+    <p class="hint">播放成品，看說話時的嘴型。聲音比嘴型<strong>早</strong>，往右拉（延後聲音）；聲音比嘴型<strong>晚</strong>，往左拉（提前聲音）。套用只需幾秒，不會重新編碼，字幕時間會一起移動。</p>
+    <video id="align-video" class="preview-media" controls preload="metadata"></video>
+    <div class="align-controls">
+      <label class="field-row">
+        <span class="field-label">聲音偏移 <output id="align-out">未調整</output></span>
+        <input type="range" id="align-offset" min="-1000" max="1000" step="10" value="0">
+      </label>
+      <div class="align-nudge">
+        <button type="button" class="ghost" data-nudge="-50">−50 ms</button>
+        <button type="button" class="ghost" data-nudge="-10">−10 ms</button>
+        <button type="button" class="ghost" data-nudge="10">+10 ms</button>
+        <button type="button" class="ghost" data-nudge="50">+50 ms</button>
+        <button type="button" class="ghost" id="align-zero">歸零</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" id="align-apply" class="primary">套用並重新輸出</button>
+    </div>
+    <p id="align-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+
   <section class="panel" aria-labelledby="jobs-title">
     <div class="panel-head">
       <h2 id="jobs-title">3. 處理進度</h2>

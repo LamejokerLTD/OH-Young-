@@ -3,17 +3,20 @@
 Transcripts are produced from the rendered file, so their timestamps match the
 delivered video (after cuts and speed change), not the original recording.
 """
+import json
 import logging
+import os
 import shutil
+import time
 import uuid
 from pathlib import Path
 
 from opencc import OpenCC
 
-from app.audio import extract
+from app.audio import extract, ffmpeg
 from app.prep import cutlist, store
 from app.prep.errors import PrepCancelled, PrepError
-from app.prep.media import MediaInfo, detect_silence, probe
+from app.prep.media import MediaInfo, detect_silence, probe, run_tool
 from app.prep.params import PREVIEW_SECONDS, Params
 from app.prep.paths import resolve_input, video_root
 from app.prep.render import render
@@ -192,3 +195,89 @@ def preview(source_relative: str, params: Params, cancel, root: Path | None = No
             scratch.rmdir()
         except OSError:
             pass
+
+
+ALIGN_LIMIT_MS = 2000
+
+
+def _shift_transcript(directory: Path, delta: float) -> None:
+    """Move every transcript and subtitle timestamp by `delta` seconds and rewrite all formats."""
+    path = directory / 'transcript.json'
+    if not path.is_file() or abs(delta) < 1e-6:
+        return
+    result = json.loads(path.read_text(encoding='utf-8'))
+
+    def move(item):
+        if not isinstance(item, dict):
+            return
+        for key in ('start', 'end'):
+            if isinstance(item.get(key), (int, float)):
+                item[key] = max(0.0, round(item[key] + delta, 3))
+
+    for segment in result.get('segments', []):
+        move(segment)
+        for word in segment.get('words') or []:
+            move(word)
+    for cue in result.get('subtitles', []):
+        move(cue)
+    export(result, directory)
+
+
+def _replace_when_free(source: Path, target: Path, attempts: int = 20) -> None:
+    """Windows refuses to replace a file a player still has open; give it a few seconds to let go."""
+    for attempt in range(attempts):
+        try:
+            os.replace(source, target)
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                source.unlink(missing_ok=True)
+                raise PrepError('成品影片正在被播放或開啟，請先關閉播放器或剪輯軟體後再試。')
+            time.sleep(0.25)
+
+
+def align(manifest: dict, offset_ms: int, root: Path | None = None) -> None:
+    """Shift the audio of the finished render against its video. Positive delays the audio.
+
+    The video and audio streams are copied, not re-encoded, so this takes seconds. Every
+    adjustment starts from the first render (kept as a hard link), so offsets never stack.
+    """
+    root = root or video_root()
+    if not -ALIGN_LIMIT_MS <= offset_ms <= ALIGN_LIMIT_MS:
+        raise PrepError('對齊範圍是正負 2000 毫秒。')
+    if manifest['status'] != 'done':
+        raise PrepError('只有處理完成的工作可以調整音畫對齊。')
+    folder = store.project_dir(manifest['id'], root)
+    output = folder / 'output'
+    render_file = output / 'render.mp4'
+    if not render_file.is_file():
+        raise PrepError('這個工作沒有成品影片可以調整。')
+
+    base = output / '.render-base.mp4'
+    if not base.is_file():
+        try:
+            os.link(render_file, base)   # same data, no extra disk space
+        except OSError:
+            shutil.copy2(render_file, base)
+
+    seconds = f'{abs(offset_ms) / 1000:.3f}'
+    whitelist = ['-protocol_whitelist', 'file,pipe']
+    args = [ffmpeg(), '-nostdin', '-hide_banner', '-y', *whitelist, '-i', str(base), *whitelist]
+    if offset_ms > 0:
+        args += ['-itsoffset', seconds]
+    elif offset_ms < 0:
+        args += ['-ss', seconds]
+    temporary = output / '.render-aligning.mp4'
+    args += ['-i', str(base), '-map', '0:v:0', '-map', '1:a:0', '-c', 'copy',
+             '-movflags', '+faststart', str(temporary)]
+    code, text = run_tool(args, log_dir=folder / 'intermediate', timeout=600)
+    if code or not temporary.is_file() or temporary.stat().st_size == 0:
+        temporary.unlink(missing_ok=True)
+        logger.error('Align failed: %s', text[-600:])
+        raise PrepError('調整音畫對齊失敗，成品維持原狀。')
+    _replace_when_free(temporary, render_file)
+
+    previous = manifest.get('av_offset_ms') or 0
+    _shift_transcript(output / 'transcript', (offset_ms - previous) / 1000)
+    manifest['av_offset_ms'] = offset_ms
+    store.save(manifest, root)

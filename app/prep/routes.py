@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.config import ROOT
 from app.prep import pipeline, store
 from app.prep.errors import PrepError
-from app.prep.params import PREVIEW_SECONDS, BatchRequest, PreviewRequest
+from app.prep.params import PREVIEW_SECONDS, AlignRequest, BatchRequest, PreviewRequest
 from app.prep.paths import list_inputs, previews_root, resolve_input
 from app.prep.queue import get_queue
 
@@ -24,11 +24,12 @@ router = APIRouter(prefix='/api/prep', tags=['prep'])
 MAX_ACTIVE_JOBS = 50
 PREVIEW_NAME = re.compile(r'[a-f0-9]{32}\.(mp4|m4a)')
 _preview_lock = threading.Lock()
+_align_lock = threading.Lock()
 
 
 def _summary(manifest: dict) -> dict:
     keys = ('id', 'name', 'input', 'status', 'stage', 'steps', 'error', 'info',
-            'summary', 'created_at', 'updated_at', 'warning', 'progress')
+            'summary', 'created_at', 'updated_at', 'warning', 'progress', 'av_offset_ms')
     data = {key: manifest.get(key) for key in keys}
     data['files'] = sorted(store.output_files(manifest).keys())
     return data
@@ -89,6 +90,17 @@ def download(pid: str, kind: str):
     _, media_type = store.DOWNLOADS[kind]
     extension = path.suffix
     return FileResponse(path, media_type=media_type, filename=f"{manifest['name']}{extension}")
+
+
+@router.post('/projects/{pid}/align')
+def align(pid: str, request: AlignRequest):
+    if not _align_lock.acquire(blocking=False):
+        raise HTTPException(429, '另一個對齊正在處理中，請稍候再試。')
+    try:
+        pipeline.align(store.load(pid), request.offset_ms)
+    finally:
+        _align_lock.release()
+    return _summary(store.load(pid))
 
 
 @router.post('/preview')

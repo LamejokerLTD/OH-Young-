@@ -190,6 +190,12 @@
       cancel.addEventListener('click', () => cancelJob(job.id, cancel));
       actions.append(cancel);
     }
+    if (job.status === 'done' && job.files && job.files.includes('render')) {
+      const align = el('button', '音畫對齊', 'secondary');
+      align.type = 'button';
+      align.addEventListener('click', () => openAlign(job));
+      actions.append(align);
+    }
     if (job.status === 'done' && job.files && job.files.length) {
       const remove = el('button', '刪除成品', 'danger');
       remove.type = 'button';
@@ -290,7 +296,81 @@
     setMessage('已套用推薦組合：輕度降噪、EQ、音量平衡、響度標準化。', 'ok');
   }
 
+  // ---------- A/V alignment (lives outside the job list so polling never resets the player) ----------
+  let alignJob = null;
+
+  function alignLabel(ms) {
+    if (ms > 0) return `聲音延後 ${ms} ms`;
+    if (ms < 0) return `聲音提前 ${-ms} ms`;
+    return '未調整';
+  }
+
+  function setAlignOffset(ms) {
+    const value = Math.max(-1000, Math.min(1000, Math.round(ms / 10) * 10));
+    $('align-offset').value = value;
+    $('align-out').textContent = alignLabel(value);
+  }
+
+  function loadAlignVideo() {
+    // Cache-bust so the player picks up the re-exported file after each apply.
+    $('align-video').src = `/api/prep/projects/${alignJob.id}/files/render?v=${Date.now()}`;
+  }
+
+  function openAlign(job) {
+    alignJob = job;
+    $('align-name').textContent = job.name;
+    setAlignOffset(job.av_offset_ms || 0);
+    $('align-message').textContent = job.av_offset_ms ? `目前已套用：${alignLabel(job.av_offset_ms)}` : '';
+    $('align-message').className = 'message';
+    loadAlignVideo();
+    $('align-panel').hidden = false;
+    $('align-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeAlign() {
+    alignJob = null;
+    $('align-video').removeAttribute('src');
+    $('align-video').load();
+    $('align-panel').hidden = true;
+  }
+
+  async function applyAlign() {
+    if (!alignJob) return;
+    const offset = Number($('align-offset').value);
+    const button = $('align-apply');
+    const message = $('align-message');
+    button.disabled = true;
+    message.className = 'message';
+    message.textContent = `正在套用：${alignLabel(offset)}…`;
+    // Release the file: Windows cannot replace the render while the player is still reading it.
+    const video = $('align-video');
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    try {
+      const job = await api(`/api/prep/projects/${encodeURIComponent(alignJob.id)}/align`,
+        { method: 'POST', body: { offset_ms: offset } });
+      alignJob = job;
+      loadAlignVideo();
+      message.className = 'message ok';
+      message.textContent = `已套用：${alignLabel(offset)}。請重新播放確認；下載的影片與字幕都已更新。`;
+    } catch (error) {
+      loadAlignVideo();
+      message.className = 'message error';
+      message.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   function bind() {
+    $('close-align').addEventListener('click', closeAlign);
+    $('align-apply').addEventListener('click', applyAlign);
+    $('align-zero').addEventListener('click', () => setAlignOffset(0));
+    $('align-offset').addEventListener('input', () => setAlignOffset(Number($('align-offset').value)));
+    document.querySelectorAll('[data-nudge]').forEach((button) => {
+      button.addEventListener('click', () => setAlignOffset(Number($('align-offset').value) + Number(button.dataset.nudge)));
+    });
     $('refresh-inputs').addEventListener('click', loadInputs);
     $('refresh-jobs').addEventListener('click', refreshJobs);
     $('reset-params').addEventListener('click', () => { resetParams(); setMessage('已恢復預設參數。', 'ok'); });

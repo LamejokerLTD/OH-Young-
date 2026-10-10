@@ -38,8 +38,9 @@ def clarity_filters(clarity: Clarity) -> list[str]:
     return chain
 
 
-def _between(keep) -> str:
-    return '+'.join(f'between(t,{start:.3f},{end:.3f})' for start, end in keep)
+# Phone recordings often start the audio track a fraction of a second after the video (iPhone: ~0.47 s).
+# Pad that gap with silence so audio time 0 is video time 0; without this the whole render plays early.
+AUDIO_ALIGN = 'aresample=async=1:first_pts=0'
 
 
 def _rotation_filters(rotation: int) -> list[str]:
@@ -55,25 +56,50 @@ def _rotation_filters(rotation: int) -> list[str]:
 
 
 def filter_graph(keep, params: Params, info: MediaInfo, cut: bool) -> str:
-    """Return the filter_complex text. `cut` is False when silence removal is off."""
+    """Return the filter_complex text. `cut` is False when silence removal is off.
+
+    Cuts use trim/atrim per segment joined by concat. concat starts every segment's
+    audio and video together, so per-cut rounding cannot accumulate into drift.
+    """
     parts = []
-    if info.has_video:
-        video = _rotation_filters(info.rotation)
-        if cut:
-            video += [f"select='{_between(keep)}'", 'setpts=N/FRAME_RATE/TB']
-        if params.speed != 1.0:
-            video.append(f'setpts=PTS/{params.speed:.4f}')
-        if cut or params.speed != 1.0:
-            # Constant frame rate after retiming: NVENC rejects the irregular timestamps otherwise.
-            video.append(f'fps={info.fps.numerator}/{info.fps.denominator}')
-        parts.append(f"[0:v:0]{','.join(video) or 'null'}[vout]")
-    audio = []
-    if cut:
-        audio += [f"aselect='{_between(keep)}'", 'asetpts=N/SR/TB']
-    audio += clarity_filters(params.clarity)
+    video_pre = _rotation_filters(info.rotation)
+    audio_pre = [AUDIO_ALIGN]
+    video_post = []
     if params.speed != 1.0:
-        audio.append(f'atempo={params.speed:.4f}')
-    parts.append(f"[0:a:0]{','.join(audio) or 'anull'}[aout]")
+        video_post.append(f'setpts=PTS/{params.speed:.4f}')
+    if info.has_video and (cut or params.speed != 1.0):
+        # Constant frame rate after retiming: NVENC rejects the irregular timestamps otherwise.
+        video_post.append(f'fps={info.fps.numerator}/{info.fps.denominator}')
+    audio_post = clarity_filters(params.clarity)
+    if params.speed != 1.0:
+        audio_post.append(f'atempo={params.speed:.4f}')
+
+    if not cut:
+        if info.has_video:
+            parts.append(f"[0:v:0]{','.join(video_pre + video_post) or 'null'}[vout]")
+        parts.append(f"[0:a:0]{','.join(audio_pre + audio_post)}[aout]")
+        return ';\n'.join(parts) + '\n'
+
+    count = len(keep)
+    joined = []
+    if info.has_video:
+        outs = ''.join(f'[vs{i}]' for i in range(count))
+        parts.append(f"[0:v:0]{','.join(video_pre + [f'split={count}'])}{outs}")
+    outs = ''.join(f'[as{i}]' for i in range(count))
+    parts.append(f"[0:a:0]{','.join(audio_pre + [f'asplit={count}'])}{outs}")
+    for i, (start, end) in enumerate(keep):
+        if info.has_video:
+            parts.append(f'[vs{i}]trim=start={start:.4f}:end={end:.4f},setpts=PTS-STARTPTS[v{i}]')
+            joined.append(f'[v{i}]')
+        parts.append(f'[as{i}]atrim=start={start:.4f}:end={end:.4f},asetpts=PTS-STARTPTS[a{i}]')
+        joined.append(f'[a{i}]')
+    video_flag = 1 if info.has_video else 0
+    if info.has_video:
+        parts.append(f"{''.join(joined)}concat=n={count}:v=1:a=1[vc][ac]")
+        parts.append(f"[vc]{','.join(video_post) or 'null'}[vout]")
+    else:
+        parts.append(f"{''.join(joined)}concat=n={count}:v={video_flag}:a=1[ac]")
+    parts.append(f"[ac]{','.join(audio_post) or 'anull'}[aout]")
     return ';\n'.join(parts) + '\n'
 
 
