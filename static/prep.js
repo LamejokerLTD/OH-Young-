@@ -78,8 +78,16 @@
     };
   }
 
+  // The file most recently ticked; preview uses it so it matches what the user just chose.
+  let lastChecked = null;
+
   function selectedInputs() {
     return Array.from(document.querySelectorAll('#input-list input[type=checkbox]:checked')).map((box) => box.value);
+  }
+
+  function previewTarget() {
+    const inputs = selectedInputs();
+    return inputs.includes(lastChecked) ? lastChecked : inputs[inputs.length - 1];
   }
 
   function syncOutputs() {
@@ -120,6 +128,7 @@
         const box = el('input');
         box.type = 'checkbox';
         box.value = item.path;
+        box.addEventListener('change', () => { if (box.checked) lastChecked = item.path; });
         label.append(box, el('span', item.path, 'name'));
         row.append(label, el('span', formatSize(item.size), 'size'));
         list.append(row);
@@ -244,18 +253,18 @@
   }
 
   async function previewFirst() {
-    const inputs = selectedInputs();
-    if (!inputs.length) {
+    const target = previewTarget();
+    if (!target) {
       setMessage('請先勾選一支影片來預覽。', 'error');
       return;
     }
     const button = $('preview-btn');
     button.disabled = true;
-    setMessage('正在產生預覽，約需數秒到數十秒…', '');
+    setMessage(`正在產生預覽：${target}（約需數秒到數十秒）…`, '');
     try {
-      const data = await api('/api/prep/preview', { method: 'POST', body: { input: inputs[0], params: collectParams() } });
+      const data = await api('/api/prep/preview', { method: 'POST', body: { input: target, params: collectParams() } });
       const slot = $('preview-slot');
-      slot.replaceChildren();
+      slot.replaceChildren(el('p', `預覽檔案：${target}`, 'hint'));
       const isVideo = data.url.endsWith('.mp4');
       const media = document.createElement(isVideo ? 'video' : 'audio');
       media.controls = true;
@@ -264,7 +273,7 @@
       media.src = data.url;
       slot.append(media);
       $('preview-panel').hidden = false;
-      setMessage(`預覽已產生（前 ${data.seconds} 秒）。`, 'ok');
+      setMessage(`預覽已產生：${target}（前 ${data.seconds} 秒）。`, 'ok');
       media.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {
       setMessage(error.message, 'error');
