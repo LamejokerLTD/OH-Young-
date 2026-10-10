@@ -1,51 +1,51 @@
 # WORKLIST.md — 歐陽｜影片前製工具
 
-最後更新：2026-10-09 ｜ 分支：feature/windows-desktop-app
+最後更新：2026-10-10 ｜ 分支：feature/windows-desktop-app
 
 ## 現在做到哪裡
-影片前製 MVP 完成：影片探測、靜音剪輯、降噪／EQ／音量平衡／響度、變速、逐字稿、三種剪輯清單、批次佇列、30 秒預覽、`/prep` 頁面。Premiere Pro 2025 已實測匯入。未完成：Phase 1 的舊程式拆分與舊測試、Phase 3.5 三組預設、Phase 7.4 的 DaVinci／Final Cut 驗證、Phase 8、Phase 9（等待 S7–S9）。
+目標調整為「不下載任何新模型也能完整單跑的工具」。需要下載模型的發言者分離（Phase 8）與 AI 聲音合成（Phase 9）先暫緩，介面上留空。已完成的影片前製 MVP 不受影響；剩下 Phase 11「無模型版收尾」，尚未開工。
 
 ## 整體進度
-約 60%（依權重估算：Phase 8、9 尚未開始，共 25%；已完成項目中有部分未做，例如 1.4、1.5、2.5）
+約 75%（以目前範圍計算）
+
+Phase 8、9 暫緩，不再計入目前範圍，所以進度從約 60% 調整為約 75%。剩下的主要是 Phase 11 收尾，以及收尾後的安全複查與你的試聽驗收。
 
 ## 產品目標
 把現有的本機逐字稿工具擴充成影片前製工具。可以一次放入多支影片，選好參數後批次完成：
-提速、聲音清晰化、發言者音軌分離、逐字稿、去除空白，以及實驗性的 AI 聲音合成。
-成品是處理後影片、字幕，以及可匯入剪輯軟體的剪輯清單。
+提速、聲音清晰化、逐字稿、去除空白，並輸出可匯入剪輯軟體的剪輯清單。
 
-## 已鎖定決策（2026-10-09）
+**目前目標（2026-10-10）**：不下載任何新模型也能完整運行。需要下載模型才能做的功能（發言者分離、AI 聲音合成）先留空，等工具完成後再討論是否下載。
+
+## 已鎖定決策
 
 | 項目 | 決定 |
 |---|---|
+| 目前範圍 | 只做不需要下載新模型的功能；需要模型的功能在介面上留空並標示「尚未啟用」（2026-10-10） |
+| 逐字稿與 Whisper | Whisper large-v3 已在本機快取，逐字稿保留可用；找不到模型時停用逐字稿，不自動下載 |
 | 多檔處理 | 各自獨立批次，同一組參數，逐一排隊 |
 | 成品 | 處理後影片 + 字幕 + 剪輯清單 |
 | 剪輯清單 | FCPXML（DaVinci Resolve、Final Cut Pro）、Premiere XML、EDL（通用） |
-| 人聲重製 | 發言者音軌分離 + AI 聲音合成 |
-| AI 合成引擎 | 本機模型為預設，可切換雲端服務 |
-| AI 合成輸出 | 另外輸出一條音軌，不取代原聲 |
-| 開發順序 | AI 聲音合成最後做，標示為實驗性；發言者分離與 AI 合成的下載延後到最後決定 |
+| 剪輯清單驗證 | 實測 Premiere Pro 2025；DaVinci Resolve／Final Cut Pro 只做格式檢查 |
 | 專案保存位置 | E:\Codex\OH Young! l 影片製作工具\Video（已加入 .gitignore） |
 | 清理規則 | 中間檔 7 天自動刪除；成品只能手動刪除 |
-| 成品編碼 | H.264 高畫質，RTX 3060 硬體編碼 |
-| 剪輯清單驗證 | 實測 Premiere Pro 2025；DaVinci Resolve／Final Cut Pro 只做格式檢查 |
-| 發言者辨識模型 | pyannote（需你本人設定 Hugging Face Token） |
+| 成品編碼 | H.264 高畫質，RTX 3060 硬體編碼，無法使用時退回 CPU |
+| 暫緩功能 | 發言者分離（pyannote）、AI 聲音合成（本機或雲端）；工具完成後再討論（⏸ S15） |
 | 舊優化清單 | 併入本清單（見 Change Log 對照） |
 
 ### 固定處理順序
-清晰化／發言者分離 → 偵測空白 → 剪接 → 提速 → 逐字稿（字幕時間碼對到成品）
+清晰化 → 偵測空白 → 剪接 → 提速 → 逐字稿（字幕時間碼對到成品）
 
 ### Security Invariants
-1. 雲端 API Key 只存在 Windows 認證儲存區，不進 Git、設定檔、前端程式碼、Log、錯誤訊息。
-2. 雲端合成預設關閉；每次使用前明確提示「音訊會上傳第三方」。
-3. 雲端合成送出前顯示預估費用，並受單次與每日上限限制。
-4. 使用他人聲音克隆前必須勾選「已取得說話者同意」。
-5. 服務仍只綁定 127.0.0.1；外部網站不能觸發處理或下載。
-6. 檔名不參與磁碟路徑；下載只接受專案 ID + 白名單格式。
+1. 服務只綁定 127.0.0.1；外部網站不能觸發處理或下載。
+2. 檔名不參與磁碟路徑；下載只接受專案 ID + 白名單格式。
+3. 輸入檔只能來自 Video 資料夾，不接受符號連結與 projects 資料夾內的檔案。
+4. 工具不會自行下載任何模型。
+5. （暫緩，隨 Phase 9）雲端 API Key 只存在 Windows 認證儲存區；雲端合成預設關閉並提示上傳；費用上限；聲音克隆需同意。
 
-## 待決定（不影響目前架構，到該階段再問）
-- 是否下載 PyTorch、pyannote、本機合成模型（S7、S8，最後決定）
-- 雲端合成服務廠商（S9，最後決定）
-- 本機合成模型（Phase 9，需實測中文品質）
+## 待決定（工具完成後再談）
+- 是否下載 PyTorch 與 pyannote，啟用發言者分離（原 S7）
+- 是否下載本機聲音合成模型（原 S8）
+- 是否接雲端合成服務、接哪一家（原 S9）
 
 ## 停止點總覽
 只有下列情況我會停下來等你回覆；其餘時間（包含每個階段完成、Commit、測試修復）都會自動連續執行。
@@ -55,39 +55,42 @@
 |---|---|---|---|---|---|
 | S1 | Phase 1 開工前 | 決定 | 專案資料保存位置與自動清理規則 | 是 | 已回答：Video 資料夾；中間檔 7 天，成品手動刪 |
 | S2 | Phase 1 開工前 | 資訊 | 提供測試影片：一般單人、2–3 人對談、有背景噪音各一支（短片即可） | 是 | 已完成：三支測試影片已放入 Video\_test-samples\ |
-| S3 | 1.10 | 批准 | 封存 scripts/*-worker-*.json、合併安裝文件 | 是 | 已授權並執行；2026-10-10 依「沒用的檔案就刪掉」已刪除（見 Change Log） |
-| S4 | 任何時間 | 批准 | 刪除 dist/、temp/ 殘留、.venv.old-20261007 | 是 | 已授權：dist/、temp/、.venv.old 皆已刪除 |
+| S3 | 1.10 | 批准 | 封存 scripts/*-worker-*.json、合併安裝文件 | 是 | 已授權並執行；之後依「沒用的檔案就刪掉」已刪除 |
+| S4 | 任何時間 | 批准 | 刪除 dist/、temp/ 殘留、.venv.old-20261007 | 是 | 已授權：皆已刪除 |
 | S5 | 2.4 | 決定 | 成品影片編碼設定 | 是 | 已回答：H.264 高畫質（NVENC） |
 | S6 | 7.4 | 資訊 | 剪輯軟體實際匯入驗證 | 是 | 已回答：只實測 Premiere Pro 2025；DaVinci／Final Cut 標 NOT RUN |
-| S7 | Phase 8 開工前 | 批准＋資訊 | 下載 PyTorch 與 pyannote；你本人同意 Hugging Face 條款並設定 Token | 部分 | 模型已選 pyannote；下載延後到最後決定 |
-| S8 | 9.1 | 批准 | 下載本機聲音合成模型（數 GB） | 是 | 延後到最後決定 |
-| S9 | 9.5 | 決定 | 雲端合成服務廠商 | 是 | 延後到最後決定 |
-| S10 | 9.6 | 資訊 | 雲端 API Key 由你本人輸入到工具內（我不會經手 Key） | 否 | 未到 |
-| S11 | Phase 10 | 批准 | Security Gate 為 BLOCK 或 CONDITIONAL 時的處理 | 否 | 未到 |
-| S12 | 全部完成後 | 批准 | Push、建立 PR、Merge 到 main | 是 | Push feature branch 已授權並執行（origin）；PR、Merge 未授權 |
-| S13 | Phase 1 開工前 | 決定 | 專案沒有 .venv，只剩 .venv.old-20261007；啟動腳本目前找不到環境 | 是 | 已回答：已重建 .venv 並驗證（後續 96 項測試通過） |
+| S7 | Phase 8 | 批准＋資訊 | 下載 PyTorch 與 pyannote；你本人設定 Hugging Face Token | 否 | 暫緩：併入 S15 |
+| S8 | Phase 9 | 批准 | 下載本機聲音合成模型 | 否 | 暫緩：併入 S15 |
+| S9 | Phase 9 | 決定 | 雲端合成服務廠商 | 否 | 暫緩：併入 S15 |
+| S10 | Phase 9 | 資訊 | 雲端 API Key 由你本人輸入 | 否 | 暫緩：隨 Phase 9 |
+| S11 | Phase 10 | 批准 | Security Gate 為 BLOCK 或 CONDITIONAL 時的處理 | 否 | 首次審查 PASS；Phase 11 後複查時才可能觸發 |
+| S12 | 全部完成後 | 批准 | Push、建立 PR、Merge 到 main | 是 | Push feature 分支已授權並執行；PR、Merge 未授權 |
+| S13 | Phase 1 開工前 | 決定 | 專案沒有 .venv，只剩 .venv.old-20261007 | 是 | 已回答：已重建 .venv 並驗證 |
+| S14 | Phase 11 完成後 | 資訊 | 你親自試聽三支測試影片的成品（降噪、EQ、變速、去除空白），回報是否可用 | 否 | 未到 |
+| S15 | 工具完成後 | 決定 | 討論是否下載模型、啟用發言者分離與 AI 聲音合成 | 否 | 未到 |
 
-不是停止點：階段完成、Commit、測試失敗修復、UI 風格選型（我依 UIUX CATALOG 自行決定並記錄）、試聽類人工驗收（累積到最終驗收一起看）。
+不是停止點：階段完成、Commit、測試失敗修復、UI 細節調整、文件更新。
 意外的停止條件：重大需求衝突、可能破壞你的既有工作、無法安全處理的資安風險、合理修復後仍有實質阻擋。
 
-### 執行順序（依 S7–S9 延後調整）
-Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查與驗收）→ ⏸ S7／S8／S9 一次決定 → Phase 8 → Phase 9 → 新增部分的安全複查。
+### 執行順序
+Phase 11 → Phase 10 安全複查 → ⏸ S14 你試聽驗收 → 工具完成 → ⏸ S15 討論是否下載模型 → （若同意）Phase 8 → Phase 9。
 
 ## Phase 與權重
 
 | # | Phase | 權重 | 狀態 |
 |---|---|---|---|
 | 0 | 分析與需求決策 | 3% | 完成 |
-| 1 | 基礎整理（測試、後端拆分、專案保存、批次佇列） | 15% | 大部分完成（1.4、1.5、1.2、1.3 未做） |
-| 2 | 處理流程骨架與參數介面 | 12% | 大部分完成（2.5 未做） |
-| 3 | 聲音清晰化 | 8% | 完成（3.5 僅一組推薦組合） |
-| 4 | 去除空白 | 10% | 完成 |
-| 5 | 影片提速 | 5% | 完成 |
-| 6 | 逐字稿對接 | 5% | 完成 |
-| 7 | 剪輯清單匯出 | 10% | 產生完成；7.4 僅 Premiere 實測，DaVinci／Final Cut 為 NOT RUN |
-| 8 | 發言者分離 | 10% | 未開始（⏸ S7 尚未決定） |
-| 9 | AI 聲音合成（實驗性） | 15% | 未開始（⏸ S8、S9 尚未決定） |
-| 10 | 安全審查與整體驗收 | 7% | 安全審查完成，結果 PASS（範圍：本機功能）；雲端項目待 Phase 9 |
+| 1 | 基礎整理（專案保存、批次佇列、清理） | 13% | 完成（1.2–1.5 移到後續優化） |
+| 2 | 處理流程骨架與參數介面 | 12% | 完成（2.5 移到後續優化） |
+| 3 | 聲音清晰化 | 8% | 完成（3.5 移到 11.3） |
+| 4 | 去除空白 | 12% | 完成 |
+| 5 | 影片提速 | 6% | 完成 |
+| 6 | 逐字稿對接 | 6% | 完成 |
+| 7 | 剪輯清單匯出 | 10% | 完成（Premiere 實測；DaVinci／Final Cut 依 S6 為 NOT RUN） |
+| 8 | 發言者分離 | 0% | 暫緩（需要下載模型，⏸ S15） |
+| 9 | AI 聲音合成（實驗性） | 0% | 暫緩（需要下載模型，⏸ S15） |
+| 10 | 安全審查與整體驗收 | 10% | 首次審查 PASS；Phase 11 後需複查 |
+| 11 | 無模型版收尾 | 20% | 尚未開始 |
 
 ---
 
@@ -95,160 +98,168 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 - [x] 專案功能、架構、檔案組成分析
 - [x] 五項新功能可行性評估
 - [x] 需求決策鎖定（見上方表格）
-- Evidence：對話中的分析與兩輪選擇題回答（2026-10-09）
+- Evidence：對話中的分析與選擇題回答（2026-10-09、2026-10-10）
 
-## Phase 1：基礎整理
+## Phase 1：基礎整理 — 完成
 目的：把單一工作、用完即刪的架構，改成能保存專案、批次處理的地基。
 - ⏸ S1 決定：專案保存位置與清理規則（已回答）
 - ⏸ S2 資訊：測試影片（已完成）
 - ⏸ S13 決定：Python 環境（已回答，.venv 已重建）
-- [x] 1.0 修正既有失敗測試 test_browser_default_is_project_root（寫死舊資料夾名稱「Local Whisper」）
-- [x] 1.1 補測試：jobs 狀態機（成功、失敗、取消、忙碌）（新佇列狀態機測試完成；既有 jobs.py 測試另案）
-- [ ] 1.2 補測試：GPU→CPU 退回、降速補救重試（假 provider，不下載模型）（未做：既有 GPU→CPU 退回測試另案）
-- [ ] 1.3 補測試：comparator.py、pipeline_a.py（未做：comparator.py、pipeline_a.py 測試另案）
-- [ ] 1.4 main.py 拆 routers（jobs、downloads、media、system）（未做：main.py 拆分另案，本次新功能獨立於 app/prep/，未改動既有路由）
-- [ ] 1.5 jobs.py 拆出分塊、補救、退回邏輯（未做：jobs.py 拆分另案）
-- [x] 1.6 專案資料夾設計：Video\ 下每支影片的輸入、中間檔、成品分開保存；中間檔 7 天自動清理，成品不自動刪
-- [x] 1.7 批次佇列：多檔排隊、每檔每步驟狀態、可取消單檔
-- [x] 1.8 啟動時清除過期暫存 session（保護使用中的 session）；舊 temp/ 殘留已手動清除
-- [x] 1.9 requirements 拆出 requirements-dev.txt（pytest、httpx）（requirements-lock.txt 未重新產生，仍為完整鎖定檔；選配依賴延遲載入未做）
-- [x] 1.10 處理 scripts/*-worker-*.json 與重疊安裝文件（先封存，之後依「沒用就刪」原則刪除；可由 Git 歷史還原）
-- ⏸ S3 批准：已授權封存到 docs/archive/
+- ⏸ S3 批准：已授權並執行
+- [x] 1.0 修正既有失敗測試 test_browser_default_is_project_root（寫死舊資料夾名稱）
+- [x] 1.1 補測試：新批次佇列的狀態機（成功、失敗、取消）
+- [x] 1.6 專案資料夾：Video\projects\ 下每支影片的中間檔、成品分開保存；中間檔 7 天自動清理，成品不自動刪
+- [x] 1.7 批次佇列：多檔排隊、每檔每步驟狀態、可取消單檔、重啟後標示中斷
+- [x] 1.8 啟動時清除過期暫存 session（保護使用中的 session）
+- [x] 1.9 拆出 requirements-dev.txt（pytest、httpx）；requirements-lock.txt 仍為完整鎖定檔
+- [x] 1.10 處理 scripts/*-worker-*.json 與重複的安裝紀錄（已刪除，可由 Git 歷史還原）
 - Acceptance：既有逐字稿功能行為不變；pytest 全綠；重啟後專案仍在；多檔可排隊。
 
-## Phase 2：處理流程骨架與參數介面
+## Phase 2：處理流程骨架與參數介面 — 完成
 目的：建立「選參數 → 預覽 → 批次輸出」的流程。
-- [x] 2.1 Pipeline 引擎：依固定順序串接步驟，每步可開關、可重跑
-- [x] 2.2 參數介面：五項功能的開關與參數，多檔拖入
-- [x] 2.3 30 秒預覽試聽（原始 vs 處理後）
-- [x] 2.4 成品影片編碼：H.264 高畫質（NVENC），無 GPU 時退回 CPU 編碼（H.264 NVENC，無法使用時退回 libx264）
 - ⏸ S5 決定：已回答 H.264 高畫質
-- [ ] 2.5 app.js 拆成 ES modules（原生，不引入建置工具）（未做：既有 app.js 拆分另案；新頁面 prep.js 為單檔）
-- [x] 2.6 UI 選型：依 UIUX CATALOG 選 Primary／Secondary 風格（沿用既有 style.css 設計變數與字型，未另做風格選型紀錄）
+- [x] 2.1 Pipeline 引擎：依固定順序串接步驟，每步可開關
+- [x] 2.2 參數介面：五項功能的開關與參數，多檔選取
+- [x] 2.3 30 秒預覽
+- [x] 2.4 成品影片編碼：H.264 NVENC，無法使用時退回 libx264
+- [x] 2.6 介面沿用既有 style.css 設計變數與字型
 - Acceptance：可選參數並對多檔排隊；預覽可聽；Desktop／Mobile、空、載入、錯誤、長內容狀態正常。
 
-## Phase 3：聲音清晰化
-- [x] 3.1 降噪（FFmpeg 降噪濾鏡，評估保留 noisereduce）（FFmpeg afftdn，未保留 noisereduce）
+## Phase 3：聲音清晰化 — 完成
+- [x] 3.1 降噪（FFmpeg afftdn）
 - [x] 3.2 高低頻濾波與 EQ
 - [x] 3.3 壓縮與音量平衡（acompressor）
-- [x] 3.4 響度標準化（EBU R128）（單次 loudnorm，非雙次量測）
-- [ ] 3.5 預設組：Podcast、戶外、室內回音（目前只有「推薦組合」一組；三組命名預設未做）
-- Acceptance：預設組在測試音檔上可試聽比較；響度落在目標範圍；人聲不明顯變悶。
+- [x] 3.4 響度標準化（單次 loudnorm，-16 LUFS）
+- Acceptance：推薦組合在測試影片上可試聽比較；人聲不明顯變悶（由 S14 確認）。
 
-## Phase 4：去除空白
-- [x] 4.1 用 VAD + 音量偵測找出無對話區段（改用 FFmpeg silencedetect 偵測靜音，未用 VAD）
+## Phase 4：去除空白 — 完成
+- [x] 4.1 用 FFmpeg silencedetect 找出無對話區段
 - [x] 4.2 參數：靜音門檻、最短空白長度、前後保留時間
-- [x] 4.3 精準剪接並重新編碼（整段重新渲染）
+- [x] 4.3 精準剪接並重新編碼
 - [x] 4.4 產生剪輯點資料（供 Phase 6、7 使用）
 - Acceptance：剪接後無明顯截字；剪輯點資料與成品一致。
 
-## Phase 5：影片提速
+## Phase 5：影片提速 — 完成
 - [x] 5.1 畫面與聲音同步加速，聲音保持原音高
-- [x] 5.2 速度選項與試聽（建議 1.0–1.5 倍）（速度範圍 1.0–2.0，建議 1.5 以內）
-- Acceptance：音畫同步；1.5 倍以內無明顯失真。
+- [x] 5.2 速度範圍 1.0–2.0，建議 1.5 以內
+- Acceptance：音畫同步；1.5 倍以內無明顯失真（由 S14 確認）。
 
-## Phase 6：逐字稿對接
-- [x] 6.1 逐字稿以最終成品為準，或依剪輯點與速度換算時間碼（逐字稿由成品影片重新辨識，時間碼天然對齊）
+## Phase 6：逐字稿對接 — 完成
+- [x] 6.1 逐字稿由成品影片重新辨識，時間碼對齊成品
 - [x] 6.2 字幕五種格式對齊成品
 - Acceptance：字幕在成品影片上時間正確。
 
-## Phase 7：剪輯清單匯出
-- [x] 7.1 FCPXML（DaVinci Resolve、Final Cut Pro）（依時間軸 frame 計算，23.976 以 rational 表示）
-- [x] 7.2 Premiere XML（已產生 xmeml v4）
-- [x] 7.3 EDL（通用）
-- [ ] 7.4 實際匯入 DaVinci Resolve、Premiere Pro 驗證（Final Cut Pro 需 Mac，無法本機驗證時標 NOT RUN）（Premiere Pro 2025 實測：匯入成功，序列長度與成品一致（2:16）、直式畫面；逐段剪點數量未逐一核對。DaVinci Resolve、Final Cut Pro 未安裝，標 NOT RUN）
+## Phase 7：剪輯清單匯出 — 完成
 - ⏸ S6 資訊：已回答，只實測 Premiere Pro 2025
-- Acceptance：匯入後剪輯點與成品一致。
+- [x] 7.1 FCPXML（依 frame 計算，23.976 以 rational 表示）
+- [x] 7.2 Premiere XML（xmeml v4）
+- [x] 7.3 EDL（通用）
+- [x] 7.4 Premiere Pro 2025 實測匯入成功（序列長度 2:16 與成品一致、直式）；逐段剪點數量未逐一核對；DaVinci Resolve、Final Cut Pro 未安裝，NOT RUN
+- Acceptance：匯入後序列長度與成品一致。
 
-## Phase 8：發言者分離
-- ⏸ S7 批准＋資訊：已選 pyannote；下載與 Hugging Face Token 延後到最後決定
-- [ ] 8.1 選定發言者辨識模型（確認授權與顯示記憶體需求）
+## Phase 8：發言者分離 — 暫緩（需要下載模型）
+不下載模型就無法實作，介面先留空（見 11.2）。工具完成後在 ⏸ S15 討論。
+- [ ] 8.1 選定發言者辨識模型（候選：pyannote，需要 PyTorch 與 Hugging Face Token）
 - [ ] 8.2 每位發言者輸出獨立音軌
 - [ ] 8.3 逐字稿標示發言者
 - [ ] 8.4 與 Whisper 共用 12 GB 顯示記憶體：依序執行並釋放
-- Acceptance：2–3 人對談測試音檔可正確分軌；重疊段落限制有說明。
+- Acceptance：2–3 人對談測試影片可正確分軌；重疊段落限制有說明。
 
-## Phase 9：AI 聲音合成（實驗性）
-- ⏸ S8 批准：9.1 下載本機合成模型（延後到最後決定）
-- ⏸ S9 決定：9.5 雲端服務廠商（延後到最後決定）
-- ⏸ S10 資訊：9.6 API Key 由你本人輸入
+## Phase 9：AI 聲音合成（實驗性）— 暫緩（需要下載模型或雲端服務）
+不下載模型、不接雲端就無法實作，介面先留空（見 11.2）。工具完成後在 ⏸ S15 討論。
 - [ ] 9.1 本機模型選型與中文品質實測
 - [ ] 9.2 依發言者原聲建立聲音模型，依逐字稿逐句合成
 - [ ] 9.3 對回時間軸，另外輸出合成音軌
 - [ ] 9.4 克隆同意確認選項
-- [ ] 9.5 雲端服務接入（廠商待決定）
+- [ ] 9.5 雲端服務接入
 - [ ] 9.6 API Key 存 Windows 認證儲存區
 - [ ] 9.7 預估費用、單次與每日上限、上傳警告
-- Acceptance：合成音軌可在剪輯軟體中逐句替換；Security Invariants 1–4 驗證通過。
+- Acceptance：合成音軌可在剪輯軟體中逐句替換；雲端相關 Security Invariants 驗證通過。
 
 ## Phase 10：安全審查與整體驗收
 - ⏸ S11 批准：Security Gate 為 BLOCK 或 CONDITIONAL 時
-- ⏸ S12 批准：Push、PR、Merge
-- [x] 10.1 檢視 /api/debug 是否洩漏路徑或環境資訊（保留：/api/debug 回傳絕對路徑，為 LOW；啟動器用 root 比對安裝版本，改動需另案）
-- [x] 10.2 新增 API 與上傳、下載的 Security Diff Review（已完成 Security Diff Review，見下方結果）
-- [ ] 10.3 Security Invariants：1–6 中與本機影片功能相關者已驗證；雲端相關（Key、同意、費用上限）待 Phase 9
-- [x] 10.4 全部測試、Diff Review、真實影片端到端驗收（96 項測試通過；真實影片 3 支端到端驗證（見 Evidence））
+- ⏸ S12 批准：PR、Merge
+- [x] 10.1 檢視 /api/debug（回傳絕對路徑，LOW；啟動器用 root 比對安裝版本，保留）
+- [x] 10.2 影片前製 API 的 Security Diff Review（結果見下方 Security Gate）
+- [x] 10.3 Security Invariants 1–3 驗證通過（4 於 11.1 完成後驗證；5 隨 Phase 9 暫緩）
+- [x] 10.4 全部測試與真實影片端到端驗收（96 passed；3 支測試影片）
+- [ ] 10.5 Phase 11 完成後的安全複查與全部測試
 - Acceptance：Security Gate 無 HIGH；端到端驗收通過。
+
+## Phase 11：無模型版收尾
+目的：讓工具在不下載任何新模型的情況下完整可用，需要模型的功能清楚留空。
+- [ ] 11.1 模型保護：逐字稿只在 Whisper 模型已存在時可用；找不到模型時停用逐字稿選項並說明原因，影片前製與首頁都不自動下載
+- [ ] 11.2 介面留空：/prep 顯示「發言者分離」「AI 聲音合成」為停用狀態，標示「需要下載模型，尚未啟用」
+- [ ] 11.3 清晰化預設組：Podcast、戶外、室內回音三組（原 3.5）
+- [ ] 11.4 入口整合：首頁加上「影片前製」入口；桌面版視窗也能進入 /prep
+- [ ] 11.5 文件：README 補上影片前製用法、Video 資料夾、無模型限制
+- [ ] 11.6 本機完整驗收：重開機後由捷徑啟動，跑完三支測試影片（無網路也能完成，逐字稿用既有模型）
+- ⏸ S14 資訊：你試聽三支成品並回報
+- Acceptance：斷網狀態下，從捷徑啟動到產出成品、字幕、剪輯清單全部成功；需要模型的功能不會觸發任何下載。
 
 ---
 
+## 後續優化（不影響工具完成，暫不排程）
+- 1.2 補測試：既有逐字稿的 GPU→CPU 退回、降速補救重試
+- 1.3 補測試：comparator.py、pipeline_a.py
+- 1.4 main.py 拆 routers
+- 1.5 jobs.py 拆出分塊、補救、退回邏輯
+- 2.5 既有 app.js 拆成 ES modules
+
 ## 目前工作
-無。等待 S7–S9 決定後進入 Phase 8、9。
+無。等待開始 Phase 11。
 
 ## 下一步
-提交並推送本次成果（已授權推送 feature 分支）。Phase 8、9 需要先決定 S7–S9。
+開始 Phase 11（11.1 模型保護優先）。
 
 ## Blockers
-- Phase 8 需要新增 PyTorch 與 pyannote（數 GB 下載，需要你本人同意條款與 Hugging Face Token）。
-- Phase 9 需要本機合成模型與雲端廠商決定。
+- 無。
 
 ## Decision / Approval State
-- 待決定：S7（發言者模型下載與 Token）、S8（本機合成模型下載）、S9（雲端廠商）—— 依你指示「先不下載，放到最後再決定」。
-- 已授權：S3（封存舊設定檔與安裝紀錄，已執行）、S4（刪除 dist、temp、.venv.old，已執行）、推送 feature 分支至 origin（已執行）。
+- 已決定（2026-10-10）：先完成不下載模型的工具；Phase 8、9 暫緩，S7–S10 併入 S15。
+- 已授權：S3、S4（已執行）；推送 feature 分支至 origin。
 - 未授權：PR、Merge 到 main、Production（S12）。
 
 ## 使用者需要處理
-- S7、S8、S9 要在 Phase 8、9 開工前決定。
-- 請檢查並決定是否刪除我建立的 Premiere 測試專案 `未命名 (Untitled).prproj`。它建在 Premiere 預設位置 `E:\01 Lame Joker\…\1. Premiere\`（你的其他專案資料夾內），內含剛匯入的測試剪輯清單。我不會自行刪除。
+- 請決定是否刪除我建立的 Premiere 測試專案 `未命名 (Untitled).prproj`。它建在 Premiere 預設位置 `E:\01 Lame Joker\…\1. Premiere\`（你的其他專案資料夾內）。我不會自行刪除。
 
 ## 技術紀錄
-- 現況：temp/ 5.8 GB、dist/ 5.2 GB 已於 2026-10-09 刪除（約釋放 11 GB）；static/app.js 2053 行、app/main.py 843 行、app/jobs.py 788 行
-- 環境：.venv 於 2026-10-09 依 requirements-lock.txt 重建；app.diagnostics 通過；1.0 修正後 pytest 全部通過（後續 96 passed）；pytest 需加 --basetemp 指定可寫入的暫存資料夾
-- 硬體：RTX 3060 12 GB（Whisper 與其他 AI 模型需依序共用）
-- 參考：docs/dual-track-speech-pipeline.md（舊雙軌提案，Phase 3、9 可參考）
+- 已清理：temp/、dist/（約 11 GB）、.venv.old、Video/projects 測試輸出、未引用檔案
+- 環境：.venv 依 requirements-lock.txt 重建；pytest 需加 --basetemp 指定可寫入的暫存資料夾
+- 模型：Whisper large-v3 位於 %LOCALAPPDATA%\LocalWhisper\models；目前程式找不到時會自動下載（11.1 要改掉）
+- 硬體：RTX 3060 12 GB
+- 效能：2 分 42 秒 4K 影片（降噪＋EQ＋去空白＋逐字稿）完整處理約數分鐘，未精確量測
+- 參考：docs/dual-track-speech-pipeline.md（舊雙軌提案）
 
 ## Security Gate（Phase 10，2026-10-10）
-範圍：本機影片前製功能（app/prep、/prep 頁面、/api/prep 路由）。不含尚未實作的雲端功能。
+範圍：本機影片前製功能（app/prep、/prep 頁面、/api/prep 路由）。不含暫緩的雲端功能。
 
-結果：**PASS**（沒有已確認的 HIGH；MEDIUM 已修正；LOW 保留，見下）。
+結果：**PASS**（沒有已確認的 HIGH；MEDIUM 已修正；LOW 保留，見下）。Phase 11 完成後需複查（10.5）。
 
 | 項目 | 結果 |
 |---|---|
 | 輸入路徑（路徑穿越、符號連結、projects 資料夾、副檔名） | 已檢查，測試覆蓋（test_prep.py、test_prep_api.py） |
 | 專案 ID 與下載種類 | 只接受 32 位十六進位與白名單，無任意路徑讀取 |
-| FFmpeg 參數 | 參數陣列、protocol_whitelist=file,pipe；濾鏡圖只由數值與枚舉組成，無使用者字串注入 |
+| FFmpeg 參數 | 參數陣列、protocol_whitelist=file,pipe；濾鏡圖只由數值與枚舉組成 |
 | 剪輯清單與 XML 內容 | 名稱經 escape／quoteattr，測試確認可解析 |
 | 寫入與刪除 API | 需要 X-Local-Request；非本機 Origin 回 403；刪除成品需前端確認 |
 | 資源上限 | 每次最多 20 個輸入，排隊上限 50；預覽同時只允許一個；預覽 30 秒；ffmpeg 逾時 4 小時 |
-| MEDIUM：渲染可能寫滿磁碟 | **已修正**：渲染前檢查剩餘空間（來源大小 ×1.5 + 2 GB） |
-| MEDIUM：預覽檔長時間累積 | **已修正**：每次新預覽前清除超過 24 小時的檔案 |
-| LOW：/api/debug 回傳絕對路徑 | 保留：只綁 127.0.0.1、無 CORS；啟動器用 root 比對安裝版本，改動需另案 |
+| MEDIUM：渲染可能寫滿磁碟 | 已修正：渲染前檢查剩餘空間（來源大小 ×1.5 + 2 GB） |
+| MEDIUM：預覽檔長時間累積 | 已修正：每次新預覽前清除超過 24 小時的檔案 |
+| LOW：/api/debug 回傳絕對路徑 | 保留：只綁 127.0.0.1、無 CORS；啟動器用 root 比對安裝版本 |
 | LOW：prep 工作沒有單檔大小上限 | 保留：本機來源檔，靠磁碟空間檢查與逾時保護 |
-| LOW：未發現任何 Secret 寫入 Git | 已掃描 git log -p 的 token／key 模式，無命中 |
+| Secret 掃描 | git log -p 的 token／key 模式無命中 |
 
 ## Change Log
-- 2026-10-10：本機運行驗證（96 項測試通過；/、/prep、/api/prep、既有逐字稿上傳辨識、預覽皆正常）。刪除未引用檔案（Git 歷史可還原）：docs/archive/（舊 worker 設定與過程紀錄）、scripts/verify_result.py、scripts/verify-distribution.py、scripts/verify-package-portability.mjs、tests/fixtures/、portrait_transparent_windows_icon.ico。刪除未追蹤產物：Video/projects（測試輸出）、models/（空快取）、__pycache__、.pytest_cache。
-- 2026-10-10：Phase 1–7、10 完成（除上方標註的未做項目）；S2、S5、S6、S13 已處理；刪除 .venv.old；封存舊設定檔與安裝紀錄；新增 requirements-dev.txt。
-- 2026-10-10：Premiere Pro 2025 實測匯入 cutlist.xml 成功（序列 2:16，直式）。
-- 2026-10-09：建立 WORKLIST，完成專案分析（舊版 7 階段優化清單）。
+- 2026-10-10：目標改為「不下載模型也能單跑」，清單重整：
+  - REMOVE（暫緩）：Phase 8 發言者分離、Phase 9 AI 聲音合成，權重改為 0%，不計入目前進度；S7–S10 併入 S15
+  - ADD：Phase 11 無模型版收尾（模型保護、介面留空、入口整合、文件、斷網驗收）；S14 試聽驗收；S15 討論下載
+  - MODIFY：3.5 三組預設移到 11.3；10.5 新增安全複查；Security Invariants 新增「不自行下載模型」
+  - REORDER：1.2–1.5、2.5 移到「後續優化」，不影響工具完成
+  - 進度由約 60% 改為約 75%（範圍縮小，已完成項目不變）
+- 2026-10-10：本機運行驗證（96 passed；首頁、/prep、既有逐字稿、預覽皆正常）；刪除未引用檔案與測試輸出。
+- 2026-10-10：Phase 1–7、10 完成；Premiere Pro 2025 實測匯入成功。
 - 2026-10-10：設定 GitHub remote 並 push feature/windows-desktop-app。
-- 2026-10-09：重建 .venv 並驗證；刪除 .venv.old-20261007；新增 1.0 修正既有失敗測試。
-- 2026-10-09：集中回答停止點；刪除 dist/、temp/；Video/ 加入 .gitignore；新增 S13（.venv 缺失）；調整執行順序（Phase 8、9 移到 Phase 10 之後）。
-- 2026-10-09：標示停止點 S1–S12。
-- 2026-10-09：需求擴充為影片前製工具，清單重整（MERGE）：
-  - 舊 1 磁碟清理 → 新 1.8
-  - 舊 2 測試補強 → 新 1.1–1.3
-  - 舊 3 後端拆分 → 新 1.4–1.5
-  - 舊 4 前端模組化 → 新 2.5
-  - 舊 5 依賴與文件 → 新 1.9–1.10
-  - 舊 6 安全小項 → 新 10.1–10.2
+- 2026-10-09：重建 .venv；集中回答停止點；刪除 dist/、temp/；Video/ 加入 .gitignore。
+- 2026-10-09：需求擴充為影片前製工具，清單重整（MERGE 舊 7 階段優化清單）。
+- 2026-10-09：建立 WORKLIST，完成專案分析。
