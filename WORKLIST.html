@@ -50,12 +50,12 @@ table.stops td:first-child{color:var(--text)}
 <body>
 <main>
 <h1>歐陽｜影片前製工具</h1>
-<p class="sub">最後更新：2026-10-10 ｜ 分支 feature/windows-desktop-app ｜ 目前：目標調整為「不下載任何新模型也能完整單跑的工具」。需要下載模型的發言者分離（Phase 8）與 AI 聲音合成（Phase 9）先暫緩，介面上留空。已完成的影片前製 MVP 不受影響；剩下 Phase 11「無模型版收尾」，尚未開工。</p>
+<p class="sub">最後更新：2026-10-11 ｜ 分支 feature/windows-desktop-app ｜ 目前：Phase 11 進行中。已修正你回報的「影片與聲音不同步」（iPhone 影片音軌晚 0.47 秒開始，舊版剪接把這段差距丟掉），並新增「音畫對齊」步驟：下載前可播放成品、以毫秒調整聲音並快速重新輸出。發言者分離與 AI 聲音合成仍暫緩。</p>
 
 <section class="card">
-<div class="big">整體進度：約 75%</div>
-<div class="bar"><div style="width:75%"></div></div>
-<p class="muted" style="margin:8px 0 0">Phase 8、9 暫緩，不再計入目前範圍，所以進度從約 60% 調整為約 75%。剩下的主要是 Phase 11 收尾，以及收尾後的安全複查與你的試聽驗收。</p>
+<div class="big">整體進度：約 80%</div>
+<div class="bar"><div style="width:80%"></div></div>
+<p class="muted" style="margin:8px 0 0">Phase 8、9 暫緩，不計入目前範圍。Phase 11 已完成同步修正與音畫對齊，剩下模型保護、介面留空、預設組、入口整合、文件與斷網驗收，以及之後的安全複查與你的試聽驗收。</p>
 </section>
 
 <section class="card action">
@@ -90,7 +90,7 @@ table.stops td:first-child{color:var(--text)}
 <details><summary><span class="pn">8</span><b>發言者分離</b><span class="meta">權重 0%・0/4 項</span><span class="tag wait">暫緩（需要下載模型，⏸ S15）</span></summary><ul class="chk"><li class="">☐ 8.1 選定發言者辨識模型（候選：pyannote，需要 PyTorch 與 Hugging Face Token）</li><li class="">☐ 8.2 每位發言者輸出獨立音軌</li><li class="">☐ 8.3 逐字稿標示發言者</li><li class="">☐ 8.4 與 Whisper 共用 12 GB 顯示記憶體：依序執行並釋放</li></ul><p class="acc"><b>驗收條件：</b>2–3 人對談測試影片可正確分軌；重疊段落限制有說明。</p></details>
 <details><summary><span class="pn">9</span><b>AI 聲音合成（實驗性）— 暫緩（需要下載模型或雲端服務）</b><span class="meta">權重 0%・0/7 項</span><span class="tag wait">暫緩（需要下載模型，⏸ S15）</span></summary><ul class="chk"><li class="">☐ 9.1 本機模型選型與中文品質實測</li><li class="">☐ 9.2 依發言者原聲建立聲音模型，依逐字稿逐句合成</li><li class="">☐ 9.3 對回時間軸，另外輸出合成音軌</li><li class="">☐ 9.4 克隆同意確認選項</li><li class="">☐ 9.5 雲端服務接入</li><li class="">☐ 9.6 API Key 存 Windows 認證儲存區</li><li class="">☐ 9.7 預估費用、單次與每日上限、上傳警告</li></ul><p class="acc"><b>驗收條件：</b>合成音軌可在剪輯軟體中逐句替換；雲端相關 Security Invariants 驗證通過。</p></details>
 <details><summary><span class="pn">10</span><b>安全審查與整體驗收</b><span class="meta">權重 10%・4/5 項</span><span class="tag wait">首次審查 PASS；Phase 11 後需複查</span><span class="tag stopt">⏸ 2 個停止點</span></summary><div class="stop"><b>⏸ S11 批准</b>：Security Gate 為 BLOCK 或 CONDITIONAL 時</div><div class="stop"><b>⏸ S12 批准</b>：PR、Merge</div><ul class="chk"><li class="done">☑ 10.1 檢視 /api/debug（回傳絕對路徑，LOW；啟動器用 root 比對安裝版本，保留）</li><li class="done">☑ 10.2 影片前製 API 的 Security Diff Review（結果見下方 Security Gate）</li><li class="done">☑ 10.3 Security Invariants 1–3 驗證通過（4 於 11.1 完成後驗證；5 隨 Phase 9 暫緩）</li><li class="done">☑ 10.4 全部測試與真實影片端到端驗收（96 passed；3 支測試影片）</li><li class="">☐ 10.5 Phase 11 完成後的安全複查與全部測試</li></ul><p class="acc"><b>驗收條件：</b>Security Gate 無 HIGH；端到端驗收通過。</p></details>
-<details><summary><span class="pn">11</span><b>無模型版收尾</b><span class="meta">權重 20%・0/6 項</span><span class="tag wait">尚未開始</span><span class="tag stopt">⏸ 1 個停止點</span></summary><div class="stop"><b>⏸ S14 資訊</b>：你試聽三支成品並回報</div><p class="muted">讓工具在不下載任何新模型的情況下完整可用，需要模型的功能清楚留空。</p><ul class="chk"><li class="">☐ 11.1 模型保護：逐字稿只在 Whisper 模型已存在時可用；找不到模型時停用逐字稿選項並說明原因，影片前製與首頁都不自動下載</li><li class="">☐ 11.2 介面留空：/prep 顯示「發言者分離」「AI 聲音合成」為停用狀態，標示「需要下載模型，尚未啟用」</li><li class="">☐ 11.3 清晰化預設組：Podcast、戶外、室內回音三組（原 3.5）</li><li class="">☐ 11.4 入口整合：首頁加上「影片前製」入口；桌面版視窗也能進入 /prep</li><li class="">☐ 11.5 文件：README 補上影片前製用法、Video 資料夾、無模型限制</li><li class="">☐ 11.6 本機完整驗收：重開機後由捷徑啟動，跑完三支測試影片（無網路也能完成，逐字稿用既有模型）</li></ul><p class="acc"><b>驗收條件：</b>斷網狀態下，從捷徑啟動到產出成品、字幕、剪輯清單全部成功；需要模型的功能不會觸發任何下載。</p></details>
+<details><summary><span class="pn">11</span><b>無模型版收尾</b><span class="meta">權重 20%・4/10 項</span><span class="tag wait">進行中（11.7–11.10 完成）</span><span class="tag stopt">⏸ 1 個停止點</span></summary><div class="stop"><b>⏸ S14 資訊</b>：你試聽三支成品並回報</div><p class="muted">讓工具在不下載任何新模型的情況下完整可用，需要模型的功能清楚留空。</p><ul class="chk"><li class="">☐ 11.1 模型保護：逐字稿只在 Whisper 模型已存在時可用；找不到模型時停用逐字稿選項並說明原因，影片前製與首頁都不自動下載</li><li class="">☐ 11.2 介面留空：/prep 顯示「發言者分離」「AI 聲音合成」為停用狀態，標示「需要下載模型，尚未啟用」</li><li class="">☐ 11.3 清晰化預設組：Podcast、戶外、室內回音三組（原 3.5）</li><li class="">☐ 11.4 入口整合：首頁加上「影片前製」入口；桌面版視窗也能進入 /prep</li><li class="">☐ 11.5 文件：README 補上影片前製用法、Video 資料夾、無模型限制</li><li class="">☐ 11.6 本機完整驗收：重開機後由捷徑啟動，跑完三支測試影片（無網路也能完成，逐字稿用既有模型）</li><li class="done">☑ 11.7 修正影片與聲音不同步：音軌晚開始時補上靜音對齊；剪接改用逐段裁切再接合，剪點誤差不再累積（實測 IMG_0042：修正前聲音短 0.53 秒且整段提早，修正後影像 157.33 秒、聲音 157.29 秒）</li><li class="done">☑ 11.8 音畫對齊步驟：完成的工作可開啟播放器，以 10／50 毫秒或滑桿調整聲音（±1000 毫秒），套用時只重新封裝不重新編碼，字幕時間同步平移；每次都從原始成品計算，不會疊加</li><li class="done">☑ 11.9 預覽改用最後勾選的檔案，並顯示預覽檔名（原本誤用清單第一個勾選檔）</li><li class="done">☑ 11.10 測試隔離：所有測試改用暫存 Video 資料夾，不再影響真正的工作（先前測試曾把執行中的工作暫時標成中斷）</li></ul><p class="acc"><b>驗收條件：</b>斷網狀態下，從捷徑啟動到產出成品、字幕、剪輯清單全部成功；需要模型的功能不會觸發任何下載。</p></details>
 </section>
 
 <section class="card">
@@ -107,7 +107,7 @@ table.stops td:first-child{color:var(--text)}
 <section class="card sec">
 <details><summary>安全原則（Security Invariants）</summary><ol><li>服務只綁定 127.0.0.1；外部網站不能觸發處理或下載。</li><li>檔名不參與磁碟路徑；下載只接受專案 ID + 白名單格式。</li><li>輸入檔只能來自 Video 資料夾，不接受符號連結與 projects 資料夾內的檔案。</li><li>工具不會自行下載任何模型。</li><li>（暫緩，隨 Phase 9）雲端 API Key 只存在 Windows 認證儲存區；雲端合成預設關閉並提示上傳；費用上限；聲音克隆需同意。</li></ol></details>
 <details><summary>技術紀錄</summary><ul><li>已清理：temp/、dist/（約 11 GB）、.venv.old、Video/projects 測試輸出、未引用檔案</li><li>環境：.venv 依 requirements-lock.txt 重建；pytest 需加 --basetemp 指定可寫入的暫存資料夾</li><li>模型：Whisper large-v3 位於 %LOCALAPPDATA%\LocalWhisper\models；目前程式找不到時會自動下載（11.1 要改掉）</li><li>硬體：RTX 3060 12 GB</li><li>效能：2 分 42 秒 4K 影片（降噪＋EQ＋去空白＋逐字稿）完整處理約數分鐘，未精確量測</li><li>參考：docs/dual-track-speech-pipeline.md（舊雙軌提案）</li></ul></details>
-<details><summary>變更紀錄</summary><ul><li>2026-10-10：目標改為「不下載模型也能單跑」，清單重整：</li><li>2026-10-10：本機運行驗證（96 passed；首頁、/prep、既有逐字稿、預覽皆正常）；刪除未引用檔案與測試輸出。</li><li>2026-10-10：Phase 1–7、10 完成；Premiere Pro 2025 實測匯入成功。</li><li>2026-10-10：設定 GitHub remote 並 push feature/windows-desktop-app。</li><li>2026-10-09：重建 .venv；集中回答停止點；刪除 dist/、temp/；Video/ 加入 .gitignore。</li><li>2026-10-09：需求擴充為影片前製工具，清單重整（MERGE 舊 7 階段優化清單）。</li><li>2026-10-09：建立 WORKLIST，完成專案分析。</li></ul><p class="muted">本頁由 WORKLIST.md 同步產生。</p></details>
+<details><summary>變更紀錄</summary><ul><li>2026-10-11：修正影片與聲音不同步（11.7）；新增音畫對齊步驟（11.8）；修正預覽檔案選擇（11.9）；修正測試隔離（11.10）；新增同步回歸測試（舊版程式重現 0.42 秒偏移、新版通過）；102 項測試通過。</li><li>2026-10-10：目標改為「不下載模型也能單跑」，清單重整：</li><li>2026-10-10：本機運行驗證（96 passed；首頁、/prep、既有逐字稿、預覽皆正常）；刪除未引用檔案與測試輸出。</li><li>2026-10-10：Phase 1–7、10 完成；Premiere Pro 2025 實測匯入成功。</li><li>2026-10-10：設定 GitHub remote 並 push feature/windows-desktop-app。</li><li>2026-10-09：重建 .venv；集中回答停止點；刪除 dist/、temp/；Video/ 加入 .gitignore。</li><li>2026-10-09：需求擴充為影片前製工具，清單重整（MERGE 舊 7 階段優化清單）。</li><li>2026-10-09：建立 WORKLIST，完成專案分析。</li></ul><p class="muted">本頁由 WORKLIST.md 同步產生。</p></details>
 </section>
 </main>
 </body>
