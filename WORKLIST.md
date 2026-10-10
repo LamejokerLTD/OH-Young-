@@ -54,8 +54,8 @@
 | 編號 | 位置 | 類型 | 我需要你做什麼 | 可提前回答 | 狀態 |
 |---|---|---|---|---|---|
 | S1 | Phase 1 開工前 | 決定 | 專案資料保存位置與自動清理規則 | 是 | 已回答：Video 資料夾；中間檔 7 天，成品手動刪 |
-| S2 | Phase 1 開工前 | 資訊 | 提供測試影片：一般單人、2–3 人對談、有背景噪音各一支（短片即可） | 是 | 等待中：請放到 Video\_test-samples\ |
-| S3 | 1.10 | 批准 | 封存 scripts/*-worker-*.json、合併安裝文件 | 是 | 已授權：Phase 1 執行（移到 docs/archive/） |
+| S2 | Phase 1 開工前 | 資訊 | 提供測試影片：一般單人、2–3 人對談、有背景噪音各一支（短片即可） | 是 | 已完成：三支測試影片已放入 Video\_test-samples\ |
+| S3 | 1.10 | 批准 | 封存 scripts/*-worker-*.json、合併安裝文件 | 是 | 已授權並執行；2026-10-10 依「沒用的檔案就刪掉」已刪除（見 Change Log） |
 | S4 | 任何時間 | 批准 | 刪除 dist/、temp/ 殘留、.venv.old-20261007 | 是 | 已授權：dist/、temp/、.venv.old 皆已刪除 |
 | S5 | 2.4 | 決定 | 成品影片編碼設定 | 是 | 已回答：H.264 高畫質（NVENC） |
 | S6 | 7.4 | 資訊 | 剪輯軟體實際匯入驗證 | 是 | 已回答：只實測 Premiere Pro 2025；DaVinci／Final Cut 標 NOT RUN |
@@ -65,7 +65,7 @@
 | S10 | 9.6 | 資訊 | 雲端 API Key 由你本人輸入到工具內（我不會經手 Key） | 否 | 未到 |
 | S11 | Phase 10 | 批准 | Security Gate 為 BLOCK 或 CONDITIONAL 時的處理 | 否 | 未到 |
 | S12 | 全部完成後 | 批准 | Push、建立 PR、Merge 到 main | 是 | Push feature branch 已授權並執行（origin）；PR、Merge 未授權 |
-| S13 | Phase 1 開工前 | 決定 | 專案沒有 .venv，只剩 .venv.old-20261007；啟動腳本目前找不到環境 | 是 | 已回答：已重建 .venv 並驗證（52 passed） |
+| S13 | Phase 1 開工前 | 決定 | 專案沒有 .venv，只剩 .venv.old-20261007；啟動腳本目前找不到環境 | 是 | 已回答：已重建 .venv 並驗證（後續 96 項測試通過） |
 
 不是停止點：階段完成、Commit、測試失敗修復、UI 風格選型（我依 UIUX CATALOG 自行決定並記錄）、試聽類人工驗收（累積到最終驗收一起看）。
 意外的停止條件：重大需求衝突、可能破壞你的既有工作、無法安全處理的資安風險、合理修復後仍有實質阻擋。
@@ -100,7 +100,7 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 ## Phase 1：基礎整理
 目的：把單一工作、用完即刪的架構，改成能保存專案、批次處理的地基。
 - ⏸ S1 決定：專案保存位置與清理規則（已回答）
-- ⏸ S2 資訊：開工前提供測試影片（等待中）
+- ⏸ S2 資訊：測試影片（已完成）
 - ⏸ S13 決定：Python 環境（已回答，.venv 已重建）
 - [x] 1.0 修正既有失敗測試 test_browser_default_is_project_root（寫死舊資料夾名稱「Local Whisper」）
 - [x] 1.1 補測試：jobs 狀態機（成功、失敗、取消、忙碌）（新佇列狀態機測試完成；既有 jobs.py 測試另案）
@@ -112,7 +112,7 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 - [x] 1.7 批次佇列：多檔排隊、每檔每步驟狀態、可取消單檔
 - [x] 1.8 啟動時清除過期暫存 session（保護使用中的 session）；舊 temp/ 殘留已手動清除
 - [x] 1.9 requirements 拆出 requirements-dev.txt（pytest、httpx）（requirements-lock.txt 未重新產生，仍為完整鎖定檔；選配依賴延遲載入未做）
-- [x] 1.10 處理 scripts/*-worker-*.json 與重疊安裝文件（需使用者確認）
+- [x] 1.10 處理 scripts/*-worker-*.json 與重疊安裝文件（先封存，之後依「沒用就刪」原則刪除；可由 Git 歷史還原）
 - ⏸ S3 批准：已授權封存到 docs/archive/
 - Acceptance：既有逐字稿功能行為不變；pytest 全綠；重啟後專案仍在；多檔可排隊。
 
@@ -213,7 +213,7 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 
 ## 技術紀錄
 - 現況：temp/ 5.8 GB、dist/ 5.2 GB 已於 2026-10-09 刪除（約釋放 11 GB）；static/app.js 2053 行、app/main.py 843 行、app/jobs.py 788 行
-- 環境：.venv 於 2026-10-09 依 requirements-lock.txt 重建；app.diagnostics 通過；pytest 52 passed、1 failed（既有測試問題，見 1.0）；pytest 需加 --basetemp 指定可寫入的暫存資料夾
+- 環境：.venv 於 2026-10-09 依 requirements-lock.txt 重建；app.diagnostics 通過；1.0 修正後 pytest 全部通過（後續 96 passed）；pytest 需加 --basetemp 指定可寫入的暫存資料夾
 - 硬體：RTX 3060 12 GB（Whisper 與其他 AI 模型需依序共用）
 - 參考：docs/dual-track-speech-pipeline.md（舊雙軌提案，Phase 3、9 可參考）
 
@@ -237,6 +237,7 @@ Phase 1 → 2 → 3 → 4 → 5 → 6 → 7 → 10（穩定功能的安全審查
 | LOW：未發現任何 Secret 寫入 Git | 已掃描 git log -p 的 token／key 模式，無命中 |
 
 ## Change Log
+- 2026-10-10：本機運行驗證（96 項測試通過；/、/prep、/api/prep、既有逐字稿上傳辨識、預覽皆正常）。刪除未引用檔案（Git 歷史可還原）：docs/archive/（舊 worker 設定與過程紀錄）、scripts/verify_result.py、scripts/verify-distribution.py、scripts/verify-package-portability.mjs、tests/fixtures/、portrait_transparent_windows_icon.ico。刪除未追蹤產物：Video/projects（測試輸出）、models/（空快取）、__pycache__、.pytest_cache。
 - 2026-10-10：Phase 1–7、10 完成（除上方標註的未做項目）；S2、S5、S6、S13 已處理；刪除 .venv.old；封存舊設定檔與安裝紀錄；新增 requirements-dev.txt。
 - 2026-10-10：Premiere Pro 2025 實測匯入 cutlist.xml 成功（序列 2:16，直式）。
 - 2026-10-09：建立 WORKLIST，完成專案分析（舊版 7 階段優化清單）。
